@@ -1,0 +1,15 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  align-items: center;
+  background-color: #a8ccd8;
+  margin: 0px;
+}
+h1{
+  font-size: 2.5rem;
+  color: white;
+}
+p {
+    font-size: 10pt;
+    color: white;
+}
