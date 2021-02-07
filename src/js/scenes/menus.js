@@ -70,7 +70,6 @@ class MainMenu extends BaseMenuScene {
 
         this.input.on('pointerdown', function (pointer) {
             this.LoadScene("game");
-            console.log("aaaaaaa");
         }, this);
 
         this.scene.start("game");

@@ -39,7 +39,7 @@ class Player extends Phaser.GameObjects.Sprite {
     //this.scene.physics.add.collider(this, this.scene.groundLayer);
   }
 
-  FindWay(world, eX, eY) {
+  FindWay(world, endX, endY) {
     for (let s of this.steps) {
       s.destroy();
     }
@@ -47,16 +47,21 @@ class Player extends Phaser.GameObjects.Sprite {
     this.way = [];
     this.steps = [];
 
-    let endX = Math.round(eX / 16);
-    let endY = Math.round(eY / 16);
-
     if (world[endX][endY] == 0) {
+
+      
+
+      let columns = world.length;
+      let rows = world[0].length;
 
       let startX = Math.round(this.x / 16);
       let startY = Math.round(this.y / 16);
 
-      let columns = world.length;
-      let rows = world[0].length;
+      startX = Math.max(0,startX);
+      startY = Math.max(0,startY);
+
+      startX = Math.min(startX, columns-1);
+      startY = Math.min(startY, rows-1);
 
       //Inicialización del mundo con todas las células nuertas
       let cells = new Array(columns);
@@ -79,10 +84,25 @@ class Player extends Phaser.GameObjects.Sprite {
       //3
       //4 pared
 
+
+
+
+      if (cells[startX][startY].state != 0) {
+        for (let i = -1; i <= 1; i++) {
+          for (let j = -1; j <= 1; j++) {
+            if (world[startX + i][startY + j] == 0) {
+              startX = startX + i;
+              startY = startY + j;
+            }
+          }
+        }
+      }
+
       cells[startX][startY].state = 1;
       cells[endX][endY].state = 2;
-
       let start = new Node(cells[startX][startY], null);
+
+
       start.ComputeFScore(endX, endY);
 
       let openList = [];
@@ -193,4 +213,14 @@ class Player extends Phaser.GameObjects.Sprite {
     this.x += delta / 10 * this.dirX;
     this.y += delta / 10 * this.dirY;
   }
+
+  GetX() {
+    return Math.floor(this.x / 16);
+  }
+
+  GetY() {
+    return Math.floor(this.y / 16);
+  }
+
+
 }
