@@ -138,7 +138,7 @@ class BaseScene extends Phaser.Scene {
                     case 21:
                     case 30:
                     case 31:
-                        this.WashHands();
+                        this.ShowSink();
                         break;
                     case 66:
                         this.player.ThrowTrash(idx);
@@ -279,6 +279,62 @@ class BaseScene extends Phaser.Scene {
             this.clothes[i].destroy();
         }
 
+        this.background.destroy();
+        this.cerrar.destroy();
+    }
+
+    ShowSink() {
+        this.pause = true;
+
+        this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+
+        this.soap = this.add.rectangle(64, 135, 64, 64, 0xff6699).setDepth(10).setScrollFactor(0).setOrigin(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.WashHands();
+        });
+
+        this.cerrar = this.add.sprite(400, 62, 'cerrar').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.HideSink();
+        });
+    }
+
+    HideSink() {
+        this.pause = false;
+        this.soap.destroy();
+        this.background.destroy();
+        this.cerrar.destroy();
+    }
+
+    ShowActions() {
+
+        this.pause = true;
+
+        this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+
+        this.cerrar = this.add.sprite(400, 62, 'cerrar').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.HideActions();
+        });
+
+        this.buttons = [];
+
+        let a = this.add.text(300, 160, "aaaaaaaa", {
+            fontFamily: 'm3x6',
+            fontSize: '32px',
+            color: '#eeeeba',
+            align: 'center'
+        }).setDepth(10).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4);
+
+        a.on('pointerdown', function (event) {
+
+        }, this);
+
+        this.buttons.push(a);
+    }
+
+    HideActions() {
+        this.pause = false;
+        for (let i = 0; i < this.buttons.length; i++) {
+            this.buttons[i].destroy();
+        }
         this.background.destroy();
         this.cerrar.destroy();
     }

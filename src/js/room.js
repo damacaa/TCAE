@@ -5,6 +5,12 @@ class Room {
         this.y = y;
 
         this.patient = new Patient(scene, x + 5, 100);
+        this.patient.setInteractive().on('pointerdown', function (event) {
+            currentScene.ShowActions();
+        }, this);
+
+        this.bed = scene.add.rectangle(x, 96, 48, 48, 0x5555bb).setDepth(1).setOrigin(0).setInteractive();
+
         this.door = scene.add.rectangle(x + 64, 256, 32, 48, 0xff0000).setDepth(1).setOrigin(0).setInteractive();
         this.door.on('pointerdown', function (event) {
             if (scene.CrossPatientDoor()) {
