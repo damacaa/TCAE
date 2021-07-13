@@ -10,17 +10,33 @@ class Preload extends Phaser.Scene {
         //Personaje
         this.load.spritesheet('player',
             'resources/player/player.png', {
-            frameWidth: 20,
+            frameWidth: 32,
             frameHeight: 32
         }
         );
 
+        this.load.spritesheet('pacientes',
+            'resources/npc/pacientes.png', {
+            frameWidth: 12,
+            frameHeight: 16
+        }
+        );
 
+        this.load.image('Bata', 'resources/items/Ropa/Bata.png');
+        this.load.image('Calzas', 'resources/items/Ropa/Calzas.png');
+        this.load.image('Gafas', 'resources/items/Ropa/Gafas.png');
+        this.load.image('Gorro', 'resources/items/Ropa/Gorro.png');
+        this.load.image('Guantes', 'resources/items/Ropa/Guantes.png');
+        this.load.image('Mascarilla', 'resources/items/Ropa/Mascarilla.png');
 
         //Escenario
         //this.load.image('puerta', 'resources/img/Items/Arcos de Paso/Arco de Paso.png');
         this.load.image('atlas', 'resources/level/Tile_sheet_extruded.png');
         this.load.tilemapTiledJSON('hospital', 'resources/level/hospital.json');
+
+        //UI
+        this.load.image('opciones', 'resources/ui/Opciones.png');
+        this.load.image('cerrar', 'resources/ui/Cerrar.png');
 
         //Musica
         //this.load.audio("music", "resources/audio/music.ogg"); // Musica fondo

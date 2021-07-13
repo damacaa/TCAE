@@ -1,16 +1,26 @@
+const ID_BATA = 0;
+const ID_CALZAS = 1;
+const ID_GAFAS = 2;
+const ID_MASCARILLA = 3;
+const ID_GORRO = 4;
+const ID_GUANTES = 5;
+
 class Player extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, 'player');
-    this.speed = 190;
-    this.dirX = 0;
-    this.dirY = 0;
-
     this.scene = scene;
     this.scene.add.existing(this);
     this.scene.entities.push(this);
-    //this.scene.physics.add.existing(this);
 
     this.setOrigin(0.5, 0.5);
+    this.setDepth(9);
+
+    this.garments = [];
+    for (let i = 0; i <= 5; i++) {
+      let g = new Garment(scene, x, y, i, this);
+      g.visible = false;
+      this.garments.push(g);
+    }
 
     this.scene.anims.create({
       key: 'walk',
@@ -26,17 +36,28 @@ class Player extends Phaser.GameObjects.Sprite {
       repeat: -1
     });
 
-    this.anims.play('idle', true);
+    this.scene.anims.create({
+      key: 'walkTrash',
+      frames: this.scene.anims.generateFrameNumbers('player', { start: 28, end: 31 }),
+      frameRate: 4,
+      repeat: -1
+    });
 
-    this.setDepth(9);
-    /*this.body.setSize(16, 16);
-    this.body.offset.x = 16;
-    this.body.offset.y = 16;*/
+    this.scene.anims.create({
+      key: 'idleTrash',
+      frames: this.scene.anims.generateFrameNumbers('player', { start: 29, end: 29 }),
+      frameRate: 4,
+      repeat: -1
+    });
 
+    this.PlayAnim('idle', true);
+
+    this.speed = 190;
+    this.dirX = 0;
+    this.dirY = 0;
     this.way = [];
     this.steps = [];
-
-    //this.scene.physics.add.collider(this, this.scene.groundLayer);
+    this.carriesTrash = false;
   }
 
   FindWay(world, endX, endY) {
@@ -48,20 +69,17 @@ class Player extends Phaser.GameObjects.Sprite {
     this.steps = [];
 
     if (world[endX][endY] == 0) {
-
-      
-
       let columns = world.length;
       let rows = world[0].length;
 
       let startX = Math.round(this.x / 16);
       let startY = Math.round(this.y / 16);
 
-      startX = Math.max(0,startX);
-      startY = Math.max(0,startY);
+      startX = Math.max(0, startX);
+      startY = Math.max(0, startY);
 
-      startX = Math.min(startX, columns-1);
-      startY = Math.min(startY, rows-1);
+      startX = Math.min(startX, columns - 1);
+      startY = Math.min(startY, rows - 1);
 
       //Inicialización del mundo con todas las células nuertas
       let cells = new Array(columns);
@@ -84,13 +102,10 @@ class Player extends Phaser.GameObjects.Sprite {
       //3
       //4 pared
 
-
-
-
       if (cells[startX][startY].state != 0) {
         for (let i = -1; i <= 1; i++) {
           for (let j = -1; j <= 1; j++) {
-            if (world[startX + i][startY + j] == 0) {
+            if (startX + i >= 0 && startX + i < columns && startY + j >= 0 && startY + j < rows && world[startX + i][startY + j] == 0) {
               startX = startX + i;
               startY = startY + j;
             }
@@ -177,7 +192,7 @@ class Player extends Phaser.GameObjects.Sprite {
       let y = Math.abs(this.way[idx].y - this.y) > 4;
 
       if (x || y) {
-        this.anims.play("walk", true);
+        this.PlayAnim("walk", true);
         if (x) {
           let difX = this.way[idx].x - this.x;
 
@@ -207,11 +222,22 @@ class Player extends Phaser.GameObjects.Sprite {
     } else {
       this.dirX = 0;
       this.dirY = 0;
-      this.anims.play('idle', true);
+      this.PlayAnim('idle', true);
     }
 
     this.x += delta / 10 * this.dirX;
     this.y += delta / 10 * this.dirY;
+  }
+
+  PlayAnim(key, bool) {
+    if (this.carriesTrash) {
+      this.anims.play(key + "Trash", bool);
+    } else {
+      this.anims.play(key, bool);
+      for (const g of this.garments) {
+        g.PlayAnim(key, bool);
+      }
+    }
   }
 
   GetX() {
@@ -222,5 +248,72 @@ class Player extends Phaser.GameObjects.Sprite {
     return Math.floor(this.y / 16);
   }
 
+  PutOn(idx) {
+    let succes = !this.garments[idx].visible;
+    this.garments[idx].visible = true;
+    return succes;
+  }
 
+  Wears(idx) {
+    if (idx > this.garments.length)
+      return false;
+
+    return this.garments[idx].visible;
+  }
+
+  RemoveAllClothes() {
+    for (const g of this.garments) {
+      g.visible = false;
+    }
+  }
+
+  CarryTrash() {
+    this.carriesTrash = true;
+    this.play("idle", true);
+  }
+
+  ThrowTrash() {
+    this.carriesTrash = false;
+  }
+}
+
+class Garment extends Phaser.GameObjects.Sprite {
+  constructor(scene, x, y, id, player) {
+    super(scene, x, y, 'player');
+    this.scene = scene;
+    this.scene.add.existing(this);
+    this.scene.entities.push(this);
+
+    this.player = player;
+
+    this.id = id + 1;
+    let idx = this.id * 4;
+
+    this.scene.anims.create({
+      key: 'walk' + this.id,
+      frames: this.scene.anims.generateFrameNumbers('player', { start: idx, end: idx + 3 }),
+      frameRate: 4,
+      repeat: -1
+    });
+
+    this.scene.anims.create({
+      key: 'idle' + this.id,
+      frames: this.scene.anims.generateFrameNumbers('player', { start: idx + 1, end: idx + 1 }),
+      frameRate: 4,
+      repeat: -1
+    });
+
+    this.setOrigin(0.5, 0.5);
+    this.setDepth(10);
+  }
+
+  Update() {
+    this.x = this.player.x;
+    this.y = this.player.y;
+    this.flipX = this.player.flipX;
+  }
+
+  PlayAnim(key, bool) {
+    this.anims.play(key + this.id, bool);
+  }
 }

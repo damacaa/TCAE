@@ -8,8 +8,6 @@ class UI extends BaseMenuScene {
         this.pause = false;
 
         this.mobile = mobileAndTabletCheck();
-
-        console.log("ui");
     }
 
     create() {

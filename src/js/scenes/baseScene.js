@@ -5,6 +5,11 @@ class BaseScene extends Phaser.Scene {
         this.entities = [];
         this.fading;
         this.gamepad;
+
+        this.pause = false;
+        this.inRoom = false;
+        this.clothes = [];
+        this.rooms = [];
     }
 
 
@@ -13,18 +18,10 @@ class BaseScene extends Phaser.Scene {
         currentScene = this;
         inGame = true;
 
-
-
         this.camera = this.cameras.main;
         this.camera.setOrigin(0.5, 0.5);
         this.camera.setBackgroundColor('rgba(60,90,10, 1)');
-
         this.camera.setRenderToTexture(customPipeline);//Activa el shader
-
-        //Crea el escenario
-
-        //this.physics.add.overlap(this.player, this.enemyProjectiles, this.ProjectileDamage, null, this);
-
         this.fading = false;
         this.camera.fadeIn(500);
         this.camera.once('camerafadeincomplete', () => {
@@ -33,20 +30,16 @@ class BaseScene extends Phaser.Scene {
 
         this.LoadTileMap();
 
-
         this.player = new Player(this, 16, (this.map.height - 1) * 16);
         this.camera.startFollow(this.player);
 
-
         this.input.on('pointerdown', function (pointer) {
-            let x = Math.floor(pointer.worldX / 16);
-            let y = Math.floor(pointer.worldY / 16);
+            if (!this.pause) {
+                let x = Math.floor(pointer.worldX / 16);
+                let y = Math.floor(pointer.worldY / 16);
 
-            this.ManageInput(x, y);
-        }, this);
-
-        this.input.on('pointerup', function (pointer) {
-
+                this.ManageInput(x, y);
+            }
         }, this);
     }
 
@@ -79,37 +72,14 @@ class BaseScene extends Phaser.Scene {
 
                 if (iTile) {
                     this.world[i][j] = 4;
-                    /*switch (iTile.index) {
-                        case 3:
-                            console.log("New door");
-                            new Door(this, i * 16, j * 16);
-                            break;
 
-                        default:
-                            break;
-                    }*/
+                    if(iTile.index == 61)
+                    this.rooms.push(new Room(this, iTile.x*16, iTile.y*16));
                 }
             }
         }
 
-        /*this.wallLayer.on('pointerdown', function (event) {
-
-           // this.player.FindWay(this.map, pointer.worldX, pointer.worldY);
-            console.log(event);
-        }, this);*/
-
-
-
-        //console.log(this.map);
-
-        /*this.groundTiles = this.map.addTilesetImage('Tile_sheet', 'atlas');
-        this.groundLayer = this.map.createStaticLayer('Suelo', this.groundTiles, 0, 0).setDepth(4);*/
-
-        //Colisiones
-        //this.groundLayer.setCollisionBetween(1, 34);
-
-        //this.physics.add.collider(this.players, this.groundLayer);
-        //this.physics.add.collider(this.enemies, this.groundLayer);
+        
 
         this.camera.setBounds(0, 0, this.map.width * 16, this.map.height * 16);
     }
@@ -120,12 +90,9 @@ class BaseScene extends Phaser.Scene {
 
     LoadScene(key) {
         if (!this.fading) {
-            //this.player.body.setVelocityX(0);
-
             this.fading = true;
             this.camera.fadeOut(500);
             this.entities = [];
-
             this.camera.once('camerafadeoutcomplete', () => {
                 this.scene.start(key);
             });
@@ -134,7 +101,6 @@ class BaseScene extends Phaser.Scene {
 
     ManageInput(x, y) {
         let iTile = this.itemLayer.getTileAt(x, y);
-
         if (iTile) {
             let closestX = x;
             let closestY = y;
@@ -152,14 +118,12 @@ class BaseScene extends Phaser.Scene {
             if (this.player.GetX() == closestX && this.player.GetY() + 1 == closestY) {
                 let idx = iTile.index - 1;
                 switch (idx) {
-                    case 2:
                     case 3:
-                    case 12:
                     case 13:
-                    case 22:
                     case 23:
                         //Door
-                        this.CrossDoor(y > this.player.GetY());
+                        //this.CrossDoor(y < this.player.GetY());
+                        this.CrossDoor(!this.inRoom);
                         break;
                     case 14:
                     case 15:
@@ -174,6 +138,8 @@ class BaseScene extends Phaser.Scene {
                     case 30:
                     case 31:
                         this.WashHands();
+                    case 66:
+                        this.player.ThrowTrash(idx);
                     default:
 
                         break;
@@ -193,15 +159,19 @@ class BaseScene extends Phaser.Scene {
             this.camera.once('camerafadeoutcomplete', () => {
                 let dist = 5 * 16;
                 if (goingIn) {
-                    this.player.y += dist;
-                } else {
                     this.player.y -= dist;
+                } else {
+                    this.player.y += dist;
+                    if (this.player.Wears(ID_MASCARILLA)) {
+                        this.player.CarryTrash();
+                        this.player.RemoveAllClothes();
+                    }
                 }
-
                 this.camera.fadeIn(500);
                 this.fading = false;
+                this.inRoom = goingIn;
             });
-        }else{
+        } else {
             console.log("Nope");
         }
     }
@@ -211,6 +181,59 @@ class BaseScene extends Phaser.Scene {
     }
 
     ShowClothes() {
-        console.log("Clothes");
+        this.pause = true;
+
+        this.background = this.add.rectangle(240, 135, 350, 180, 0xff6699).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+
+        this.cerrar = this.add.sprite(400, 62, 'cerrar').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.HideClothes();
+        });
+
+        let guantes = this.add.sprite(100, 100, 'Guantes').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_GUANTES))
+                guantes.destroy();
+        });
+        this.clothes.push(guantes);
+
+        let gorro = this.add.sprite(140, 100, 'Gorro').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_GORRO))
+                gorro.destroy();
+        });
+        this.clothes.push(gorro);
+
+        let mascarilla = this.add.sprite(200, 100, 'Mascarilla').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_MASCARILLA))
+                mascarilla.destroy();
+        });
+        this.clothes.push(mascarilla);
+
+        let gafas = this.add.sprite(300, 100, 'Gafas').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_GAFAS))
+                gafas.destroy();
+        });
+        this.clothes.push(gafas);
+
+        let calzas = this.add.sprite(140, 200, 'Calzas').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_CALZAS))
+                calzas.destroy();
+        });
+        this.clothes.push(calzas);
+
+        let bata = this.add.sprite(300, 200, 'Bata').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_BATA))
+                bata.destroy();
+        });
+        this.clothes.push(bata);
+    }
+
+    HideClothes() {
+
+        this.pause = false;
+        for (let i = 0; i < this.clothes.length; i++) {
+            this.clothes[i].destroy();
+        }
+
+        this.background.destroy();
+        this.cerrar.destroy();
     }
 }
