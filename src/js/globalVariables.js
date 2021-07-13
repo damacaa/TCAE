@@ -1,7 +1,5 @@
-let startTime;
-let inGame = false;
 let currentScene;
-let gamepad;
+let currentRoom;
 
 function ResetGame() {
 }

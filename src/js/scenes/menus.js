@@ -5,7 +5,6 @@ class BaseMenuScene extends Phaser.Scene {
     }
 
     create() {
-        inGame = false;
         currentScene = this;
         this.EnableFullScreen();
         this.loading = false;
@@ -65,13 +64,13 @@ class MainMenu extends BaseMenuScene {
         }).setDepth(10).setOrigin(1, 1).setScrollFactor(0).setLineSpacing(4);
 
         this.start.on('pointerdown', function (event) {
-            
+
         }, this);
 
         this.input.on('pointerdown', function (pointer) {
             this.LoadScene("game");
         }, this);
 
-        this.scene.start("game");
+        // this.scene.start("game");
     }
 }

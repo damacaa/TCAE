@@ -36,7 +36,7 @@ class UI extends BaseMenuScene {
     }
 
     update() {
-        if (inGame && this.mobile) {
+        if (this.mobile) {
 
         }
         if (this.text.active) {
@@ -45,6 +45,8 @@ class UI extends BaseMenuScene {
     }
 
     EnableGameUI() { }
+
+    HideGameUI() { }
 
     EnableMenuUI() { }
 }

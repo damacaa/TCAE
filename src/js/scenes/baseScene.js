@@ -8,6 +8,7 @@ class BaseScene extends Phaser.Scene {
 
         this.pause = false;
         this.inRoom = false;
+        this.inCorridor = true;
         this.clothes = [];
         this.rooms = [];
     }
@@ -16,7 +17,6 @@ class BaseScene extends Phaser.Scene {
     create() {
         ui.EnableGameUI();
         currentScene = this;
-        inGame = true;
 
         this.camera = this.cameras.main;
         this.camera.setOrigin(0.5, 0.5);
@@ -33,6 +33,8 @@ class BaseScene extends Phaser.Scene {
         this.player = new Player(this, 16, (this.map.height - 1) * 16);
         this.camera.startFollow(this.player);
 
+        this.gameController = new GameController();
+
         this.input.on('pointerdown', function (pointer) {
             if (!this.pause) {
                 let x = Math.floor(pointer.worldX / 16);
@@ -41,6 +43,10 @@ class BaseScene extends Phaser.Scene {
                 this.ManageInput(x, y);
             }
         }, this);
+
+        for (let i = 0; i < 4; i++) {
+            this.rooms.push(new Room(this, 112 + (128 * i), 0));
+        }
     }
 
     LoadTileMap() {
@@ -72,14 +78,11 @@ class BaseScene extends Phaser.Scene {
 
                 if (iTile) {
                     this.world[i][j] = 4;
-
-                    if(iTile.index == 61)
-                    this.rooms.push(new Room(this, iTile.x*16, iTile.y*16));
                 }
             }
         }
 
-        
+
 
         this.camera.setBounds(0, 0, this.map.width * 16, this.map.height * 16);
     }
@@ -123,7 +126,7 @@ class BaseScene extends Phaser.Scene {
                     case 23:
                         //Door
                         //this.CrossDoor(y < this.player.GetY());
-                        this.CrossDoor(!this.inRoom);
+                        this.CrossPatientDoor();
                         break;
                     case 14:
                     case 15:
@@ -138,8 +141,16 @@ class BaseScene extends Phaser.Scene {
                     case 30:
                     case 31:
                         this.WashHands();
+                        break;
                     case 66:
                         this.player.ThrowTrash(idx);
+                        break;
+                    case 81:
+                    case 91:
+                    case 101:
+                        //Door
+                        this.CrossDoor();
+                        break;
                     default:
 
                         break;
@@ -152,7 +163,9 @@ class BaseScene extends Phaser.Scene {
         }
     }
 
-    CrossDoor(goingIn) {
+    CrossDoor() {
+        let goingIn = this.inCorridor;
+
         if (!this.fading) {
             this.camera.fadeOut(500);
             this.fading = true;
@@ -160,6 +173,33 @@ class BaseScene extends Phaser.Scene {
                 let dist = 5 * 16;
                 if (goingIn) {
                     this.player.y -= dist;
+                } else {
+                    this.player.y += dist;
+                }
+                this.camera.fadeIn(500);
+                this.fading = false;
+                this.inCorridor = !goingIn;
+            });
+        } else {
+            console.log("Nope");
+        }
+
+        return true;
+    }
+
+    CrossPatientDoor() {
+        let goingIn = !this.inRoom;
+
+        if (!this.fading) {
+            this.camera.fadeOut(500);
+            this.fading = true;
+            this.camera.once('camerafadeoutcomplete', () => {
+                let dist = 5 * 16;
+                if (goingIn) {
+                    this.player.y -= dist;
+
+                    this.gameController.CheckMistakes(currentRoom.patient, this.player);//////////////////////////////////////
+
                 } else {
                     this.player.y += dist;
                     if (this.player.Wears(ID_MASCARILLA)) {
@@ -174,6 +214,8 @@ class BaseScene extends Phaser.Scene {
         } else {
             console.log("Nope");
         }
+
+        return true;
     }
 
     WashHands() {

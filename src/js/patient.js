@@ -7,13 +7,7 @@ class Patient extends Phaser.GameObjects.Sprite {
         //this.scene.entities.push(this);
 
         this.setDepth(1).setOrigin(0).setFrame(Math.floor(Math.random() * 4));
-        this.enfermedad = new Enfermedad();
-    }
-}
+        this.illness = "constipao";
 
-class Enfermedad {
-    constructor() {
-        this.nombre;
-        this.sintomas = [];
     }
 }
