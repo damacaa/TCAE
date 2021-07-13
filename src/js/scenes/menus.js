@@ -71,6 +71,6 @@ class MainMenu extends BaseMenuScene {
             this.LoadScene("game");
         }, this);
 
-        // this.scene.start("game");
+        this.scene.start("game");
     }
 }
