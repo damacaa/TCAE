@@ -182,7 +182,7 @@ class Player extends Phaser.GameObjects.Sprite {
         }
       }
     }
-    console.log(":(");
+    //console.log(":(");
   }
 
   Update(time, delta) {
