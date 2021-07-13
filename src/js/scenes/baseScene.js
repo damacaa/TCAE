@@ -197,8 +197,14 @@ class BaseScene extends Phaser.Scene {
                 let dist = 5 * 16;
                 if (goingIn) {
                     this.player.y -= dist;
+                    let mistakes = this.gameController.CheckMistakes(currentRoom.patient, this.player);//////////////////////////////////////
 
-                    this.gameController.CheckMistakes(currentRoom.patient, this.player);//////////////////////////////////////
+                    for (let i = 0; i < mistakes.length; i++) {
+                        let m = mistakes[i];
+                        if (m["val"] > 0) {
+                            console.log("Has perdido");
+                        }
+                    }
 
                 } else {
                     this.player.y += dist;
