@@ -51,7 +51,7 @@ class BaseScene extends Phaser.Scene {
 
     LoadTileMap() {
         this.map = this.make.tilemap({ key: "hospital" });
-        this.tiles = this.map.addTilesetImage('sprites', 'atlas', 16, 16, 1, 2);
+        this.tiles = this.map.addTilesetImage('sprites', 'atlas_extruded', 16, 16, 1, 2);
         this.wallLayer = this.map.createStaticLayer('Walls', this.tiles, 0, 0).setDepth(-1);
         this.itemLayer = this.map.createStaticLayer('Items', this.tiles, 0, 0).setDepth(1);
 
@@ -81,8 +81,6 @@ class BaseScene extends Phaser.Scene {
                 }
             }
         }
-
-
 
         this.camera.setBounds(0, 0, this.map.width * 16, this.map.height * 16);
     }
