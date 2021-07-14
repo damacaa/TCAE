@@ -173,7 +173,7 @@ class BaseScene extends Phaser.Scene {
                     this.player.y -= dist;
                 } else {
                     this.player.y += dist;
-                    //this.player.washedHands=false;////solo si es puerta de basuras////////SARA HA ESCRITO AQUI
+                    this.player.washedHands=false;////////SARA HA ESCRITO AQUI
                 }
                 this.camera.fadeIn(500);
                 this.fading = false;
