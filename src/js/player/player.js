@@ -15,7 +15,8 @@ class Player extends Phaser.GameObjects.Sprite {
     this.setOrigin(0.5, 0.5);
     this.setDepth(9);
 
-    this.washedHands=false;////////////SARA HA ESCRITO AQUI
+    this.washedHands = false;////////////SARA HA ESCRITO AQUI
+    this.washedHandsAntiseptic = false;////////////SARA HA ESCRITO AQUI
 
     this.garments = [];
     for (let i = 0; i <= 5; i++) {
@@ -60,6 +61,9 @@ class Player extends Phaser.GameObjects.Sprite {
     this.way = [];
     this.steps = [];
     this.carriesTrash = false;
+    this.trashId = 0;
+    this.firstBag = false;
+    this.secondBag = false;
   }
 
   FindWay(world, endX, endY) {
@@ -184,10 +188,12 @@ class Player extends Phaser.GameObjects.Sprite {
         }
       }
     }
-    console.log(":(");
+    //console.log(":(");
   }
 
   Update(time, delta) {
+    if (!this.scene) { return; }
+
     if (this.way.length >= 1) {
       let idx = this.way.length - 1;
       let x = Math.abs(this.way[idx].x - this.x) > 4;
@@ -232,13 +238,13 @@ class Player extends Phaser.GameObjects.Sprite {
   }
 
   PlayAnim(key, bool) {
-    if (this.carriesTrash) {
+    if (this.firstBag || this.secondBag) {
       this.anims.play(key + "Trash", bool);
     } else {
       this.anims.play(key, bool);
-      for (const g of this.garments) {
-        g.PlayAnim(key, bool);
-      }
+    }
+    for (const g of this.garments) {
+      g.PlayAnim(key, bool);
     }
   }
 
@@ -269,12 +275,16 @@ class Player extends Phaser.GameObjects.Sprite {
     }
   }
 
-  CarryTrash() {
+  CarryTrash(patient, id) {
     this.carriesTrash = true;
+    this.trashId = id;
     this.play("idle", true);
   }
 
   ThrowTrash() {
+    this.trashId = 0;
+    this.firstBag = false;
+    this.secondBag = false;
     this.carriesTrash = false;
   }
 }

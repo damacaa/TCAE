@@ -1,11 +1,8 @@
 class GameController {
     constructor() {
-
     }
 
-    CheckMistakes(patient, player) {
-        let mistakes = [];
-
+    CheckMistakesGoingIn(patient, player) {
         //Cuando sale de la habitación se llama a esta función y se le pasa el paciente
         switch (getIsolationType(patient.illness)) { //Segun tipo de aislamiento se aplican unas medidas
             case "a":
@@ -31,13 +28,38 @@ class GameController {
                 if (!player.washedHands) {
                     mistakes.push({ "mistake": "No se ha lavado las manos", "val": 1 });
                 }
-                //console.log("Achís");
+                if (currentRoom.pressure == NO_PRESSURE) {
+                    mistakes.push({ "mistake": "No hay presión", "val": 1 });
+                }
                 break;
+
             default:
                 break;
         }
 
-        return mistakes;
+        this.UpdateUI();
+    }
+
+    CheckMistakesGoingOut(patient, player) {
+
+        if (player.carriesTrash && !player.firstBag) {
+            mistakes.push({ "mistake": "No has usado la primera bolsa", "val": 1 });
+        }
+
+        this.UpdateUI();
+    }
+
+    CheckTrash(index, player) {
+        if (index != player.trashId) {
+            console.log("Mal");
+        }
+        player.ThrowTrash();
+    }
+
+    UpdateUI() { }
+
+    AddMistake(m) {
+        mistakes.push(m);
     }
 }
 

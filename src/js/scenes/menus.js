@@ -56,12 +56,12 @@ class MainMenu extends BaseMenuScene {
     SetUp() {
         this.scene.launch('ui');
 
-        this.start = this.add.text(240, 135, "aaaaaaaa", {
+        this.start = this.add.text(240, 135, "Jugar", {
             fontFamily: 'm3x6',
             fontSize: '32px',
             color: '#eeeeba',
             align: 'left'
-        }).setDepth(10).setOrigin(1, 1).setScrollFactor(0).setLineSpacing(4);
+        }).setDepth(10).setOrigin(.5).setScrollFactor(0).setLineSpacing(4);
 
         this.start.on('pointerdown', function (event) {
 
@@ -71,6 +71,7 @@ class MainMenu extends BaseMenuScene {
             this.LoadScene("game");
         }, this);
 
-        this.scene.start("game");
+        this.cameras.main.fadeIn(500);
+        //this.scene.start("game");
     }
 }

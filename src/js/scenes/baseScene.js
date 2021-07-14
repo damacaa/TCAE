@@ -2,21 +2,24 @@ class BaseScene extends Phaser.Scene {
     constructor() {
         super("game");
         this.player;
-        this.entities = [];
         this.fading;
         this.gamepad;
-
-        this.pause = false;
-        this.inRoom = false;
-        this.inCorridor = true;
-        this.clothes = [];
-        this.rooms = [];
     }
 
 
     create() {
         ui.EnableGameUI();
         currentScene = this;
+        this.entities = [];
+
+        this.pause = false;
+        this.inRoom = false;
+        this.inCorridor = true;
+        this.clothes = [];
+        this.rooms = [];
+
+        mistakes = [];
+        this.fail = false;
 
         this.camera = this.cameras.main;
         this.camera.setOrigin(0.5, 0.5);
@@ -29,6 +32,13 @@ class BaseScene extends Phaser.Scene {
         });
 
         this.LoadTileMap();
+
+        //Adding containers
+        for (let index = 1; index <= 4; index++) {
+            this.add.sprite(16 * index, 48, "container" + index).setDepth(1).setOrigin(0).setInteractive().on('pointerdown', function (pointer) {
+                currentScene.gameController.CheckTrash(index, currentScene.player);
+            }, this);
+        }
 
         this.player = new Player(this, 16, (this.map.height - 1) * 16);
         this.camera.startFollow(this.player);
@@ -142,9 +152,6 @@ class BaseScene extends Phaser.Scene {
                     case 31:
                         this.ShowSink();
                         break;
-                    case 66:
-                        this.player.ThrowTrash(idx);
-                        break;
                     case 81:
                     case 91:
                     case 101:
@@ -175,7 +182,8 @@ class BaseScene extends Phaser.Scene {
                     this.player.y -= dist;
                 } else {
                     this.player.y += dist;
-                    this.player.washedHands=false;////////SARA HA ESCRITO AQUI
+                    this.player.washedHands = false;////////SARA HA ESCRITO AQUI
+                    this.player.washedHandsAntiseptic = false;
                 }
                 this.camera.fadeIn(500);
                 this.fading = false;
@@ -196,28 +204,26 @@ class BaseScene extends Phaser.Scene {
             this.fading = true;
             this.camera.once('camerafadeoutcomplete', () => {
                 let dist = 5 * 16;
+
                 if (goingIn) {
                     this.player.y -= dist;
-                    let mistakes = this.gameController.CheckMistakes(currentRoom.patient, this.player);//////////////////////////////////////
-                    console.log(mistakes);
-                    for (let i = 0; i < mistakes.length; i++) {
-                        let m = mistakes[i];
-                        if (m["val"] > 0) {
-                            console.log("Has perdido");
-                        }
-                    }
-
+                    this.gameController.CheckMistakesGoingIn(currentRoom.patient, this.player);//////////////////////////////////////
                 } else {
                     this.player.y += dist;
-                    if (this.player.Wears(ID_MASCARILLA)) {
-                        this.player.CarryTrash();
-                        this.player.RemoveAllClothes();
+                    this.player.RemoveAllClothes();
+                    this.player.washedHands = false;////////////SARA HA ESCRITO AQUI
+                    this.player.washedHandsAntiseptic = false;
+
+                    if (this.player.carriesTrash && !this.player.firstBag) {
+                        this.gameController({ "mistake": "No has usado la primera bolsa", "val": 1 });
                     }
-                    this.player.washedHands=false;////////////SARA HA ESCRITO AQUI
                 }
+
                 this.camera.fadeIn(500);
                 this.fading = false;
                 this.inRoom = goingIn;
+
+                this.CheckMistakes();
             });
         } else {
             console.log("Nope");
@@ -226,12 +232,16 @@ class BaseScene extends Phaser.Scene {
         return true;
     }
 
-    WashHands() {
+    WashHands(antiseptic) {
         console.log("Washing hands");
-        this.player.washedHands=true;////////////SARA HA ESCRITO AQUI
+        this.player.washedHands = true;////////////SARA HA ESCRITO AQUI
+        if (antiseptic) {
+            this.player.washedHandsAntiseptic = true;
+        }
     }
 
     ShowClothes() {
+        if (this.pause) { return; }
         this.pause = true;
 
         this.background = this.add.rectangle(240, 135, 350, 180, 0xff6699).setDepth(10).setScrollFactor(0).setOrigin(0.5);
@@ -289,6 +299,7 @@ class BaseScene extends Phaser.Scene {
     }
 
     ShowSink() {
+        if (this.pause) { return; }
         this.pause = true;
 
         this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
@@ -311,6 +322,8 @@ class BaseScene extends Phaser.Scene {
 
     ShowActions() {
 
+        if (this.pause) { return; }
+
         this.pause = true;
 
         this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
@@ -329,7 +342,7 @@ class BaseScene extends Phaser.Scene {
         }).setDepth(10).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4);
 
         a.setInteractive().on('pointerdown', function (event) {
-            console.log("aaaa");
+            this.player.CarryTrash(currentRoom.patient, 1);
         }, this);
 
         this.buttons.push(a);
@@ -354,6 +367,33 @@ class BaseScene extends Phaser.Scene {
                 this.world[i][j] = 4;
                 this.world[i][j] = 4;
             }
+        }
+    }
+
+    EndGame() {
+        this.pause = true;
+        this.camera.once('camerafadeincomplete', () => {
+            console.log("menu");
+            this.fading = false;
+            currentScene.LoadScene("mainMenu");
+        });
+    }
+
+    NextDay() { }
+
+    CheckMistakes() {
+        let fail = false;
+
+        for (let i = 0; i < mistakes.length; i++) {
+            let m = mistakes[i];
+            if (m["val"] > 0) {
+                fail = true;
+                console.log(m["mistake"]);
+            }
+        }
+
+        if (fail) {
+            this.EndGame();
         }
     }
 }
