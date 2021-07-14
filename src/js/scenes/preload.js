@@ -30,8 +30,10 @@ class Preload extends Phaser.Scene {
         this.load.image('Mascarilla', 'resources/items/Ropa/Mascarilla.png');
 
         //Escenario
-        //this.load.image('puerta', 'resources/img/Items/Arcos de Paso/Arco de Paso.png');
-        this.load.image('atlas', 'resources/level/Tile_sheet_extruded.png');
+        this.load.image('door1', 'resources/items/Door1.png');
+        this.load.image('bed', 'resources/items/Bed.png');
+        this.load.image('table', 'resources/items/Table.png');
+
         this.load.image('atlas_extruded', 'resources/level/Tile_sheet_extruded.png');
         this.load.tilemapTiledJSON('hospital', 'resources/level/hospital.json');
 

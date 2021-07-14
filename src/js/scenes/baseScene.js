@@ -21,7 +21,7 @@ class BaseScene extends Phaser.Scene {
         this.camera = this.cameras.main;
         this.camera.setOrigin(0.5, 0.5);
         this.camera.setBackgroundColor('rgba(60,90,10, 1)');
-        this.camera.setRenderToTexture(customPipeline);//Activa el shader
+        //this.camera.setRenderToTexture(customPipeline);//Activa el shader
         this.fading = false;
         this.camera.fadeIn(500);
         this.camera.once('camerafadeincomplete', () => {
@@ -47,13 +47,15 @@ class BaseScene extends Phaser.Scene {
         for (let i = 0; i < 4; i++) {
             this.rooms.push(new Room(this, 112 + (128 * i), 0));
         }
+
+
     }
 
     LoadTileMap() {
         this.map = this.make.tilemap({ key: "hospital" });
         this.tiles = this.map.addTilesetImage('sprites', 'atlas_extruded', 16, 16, 1, 2);
-        this.wallLayer = this.map.createStaticLayer('Walls', this.tiles, 0, 0).setDepth(-1);
-        this.itemLayer = this.map.createStaticLayer('Items', this.tiles, 0, 0).setDepth(1);
+        this.wallLayer = this.map.createLayer('Walls', this.tiles, 0, 0).setDepth(-1);
+        this.itemLayer = this.map.createLayer('Items', this.tiles, 0, 0).setDepth(1);
 
         let columns = this.map.width;
         let rows = this.map.height;
@@ -323,8 +325,8 @@ class BaseScene extends Phaser.Scene {
             align: 'center'
         }).setDepth(10).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4);
 
-        a.on('pointerdown', function (event) {
-
+        a.setInteractive().on('pointerdown', function (event) {
+            console.log("aaaa");
         }, this);
 
         this.buttons.push(a);
@@ -337,5 +339,18 @@ class BaseScene extends Phaser.Scene {
         }
         this.background.destroy();
         this.cerrar.destroy();
+    }
+
+    BlockTiles(x, y, w, h) {
+        x = Math.floor(x / 16);
+        y = Math.floor(y / 16);
+        w = Math.floor(w / 16);
+        h = Math.floor(h / 16);
+        for (let i = x; i < x + w; i++) {
+            for (let j = y; j < y + h; j++) {
+                this.world[i][j] = 4;
+                this.world[i][j] = 4;
+            }
+        }
     }
 }

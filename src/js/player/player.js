@@ -52,7 +52,7 @@ class Player extends Phaser.GameObjects.Sprite {
 
     this.PlayAnim('idle', true);
 
-    this.speed = 190;
+    this.speed = 15;
     this.dirX = 0;
     this.dirY = 0;
     this.way = [];
@@ -225,8 +225,8 @@ class Player extends Phaser.GameObjects.Sprite {
       this.PlayAnim('idle', true);
     }
 
-    this.x += delta / 10 * this.dirX;
-    this.y += delta / 10 * this.dirY;
+    this.x += delta * this.speed * this.dirX / 100;
+    this.y += delta * this.speed * this.dirY / 100;
   }
 
   PlayAnim(key, bool) {
