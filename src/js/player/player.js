@@ -15,6 +15,8 @@ class Player extends Phaser.GameObjects.Sprite {
     this.setOrigin(0.5, 0.5);
     this.setDepth(9);
 
+    this.washedHands=false;////////////SARA HA ESCRITO AQUI
+
     this.garments = [];
     for (let i = 0; i <= 5; i++) {
       let g = new Garment(scene, x, y, i, this);

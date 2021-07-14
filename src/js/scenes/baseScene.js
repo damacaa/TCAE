@@ -173,6 +173,7 @@ class BaseScene extends Phaser.Scene {
                     this.player.y -= dist;
                 } else {
                     this.player.y += dist;
+                    this.player.washedHands=false;////////SARA HA ESCRITO AQUI
                 }
                 this.camera.fadeIn(500);
                 this.fading = false;
@@ -196,7 +197,7 @@ class BaseScene extends Phaser.Scene {
                 if (goingIn) {
                     this.player.y -= dist;
                     let mistakes = this.gameController.CheckMistakes(currentRoom.patient, this.player);//////////////////////////////////////
-
+                    console.log(mistakes);
                     for (let i = 0; i < mistakes.length; i++) {
                         let m = mistakes[i];
                         if (m["val"] > 0) {
@@ -210,6 +211,7 @@ class BaseScene extends Phaser.Scene {
                         this.player.CarryTrash();
                         this.player.RemoveAllClothes();
                     }
+                    this.player.washedHands=false;////////////SARA HA ESCRITO AQUI
                 }
                 this.camera.fadeIn(500);
                 this.fading = false;
@@ -224,6 +226,7 @@ class BaseScene extends Phaser.Scene {
 
     WashHands() {
         console.log("Washing hands");
+        this.player.washedHands=true;////////////SARA HA ESCRITO AQUI
     }
 
     ShowClothes() {
