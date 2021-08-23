@@ -67,6 +67,8 @@ class Player extends Phaser.GameObjects.Sprite {
   }
 
   FindWay(world, endX, endY) {
+
+
     for (let s of this.steps) {
       s.destroy();
     }
@@ -132,8 +134,7 @@ class Player extends Phaser.GameObjects.Sprite {
       let current = openList[0];
 
       let count = 0;
-
-      while (openList.length > 0 && count < 999999) {
+      while (openList.length > 0 && count < 1000) {
         count++;
         current.cell.state = 4;
 

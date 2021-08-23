@@ -6,7 +6,6 @@ class BaseScene extends Phaser.Scene {
         this.gamepad;
     }
 
-
     create() {
         ui.EnableGameUI();
         currentScene = this;
@@ -18,7 +17,6 @@ class BaseScene extends Phaser.Scene {
         this.clothes = [];
         this.rooms = [];
 
-        mistakes = [];
         this.fail = false;
 
         this.camera = this.cameras.main;
@@ -36,14 +34,14 @@ class BaseScene extends Phaser.Scene {
         //Adding containers
         for (let index = 1; index <= 4; index++) {
             this.add.sprite(16 * index, 48, "container" + index).setDepth(1).setOrigin(0).setInteractive().on('pointerdown', function (pointer) {
-                currentScene.gameController.CheckTrash(index, currentScene.player);
+                currentScene.gameManager.CheckTrash(index, currentScene.player);
             }, this);
         }
 
         this.player = new Player(this, 16, (this.map.height - 1) * 16);
         this.camera.startFollow(this.player);
 
-        this.gameController = new GameController();
+        this.gameManager = new GameManager(this);
 
         this.input.on('pointerdown', function (pointer) {
             if (!this.pause) {
@@ -53,10 +51,6 @@ class BaseScene extends Phaser.Scene {
                 this.ManageInput(x, y);
             }
         }, this);
-
-        for (let i = 0; i < 4; i++) {
-            this.rooms.push(new Room(this, 112 + (128 * i), 0));
-        }
 
 
     }
@@ -70,25 +64,21 @@ class BaseScene extends Phaser.Scene {
         let columns = this.map.width;
         let rows = this.map.height;
 
-        this.world = new Array(columns);
+        this.world = new Array(columns);//Stores the tiles the character can walk through
+        this.items = new Array(columns);//Stores the item in every tile
 
         for (var i = 0; i < this.world.length; i++) {
             this.world[i] = new Array(rows);
+            this.items[i] = new Array(rows);
         }
 
         for (let i = 0; i < columns; i++) {
             for (let j = 0; j < rows; j++) {
-
                 let wTile = this.wallLayer.getTileAt(i, j);
-                let iTile = this.itemLayer.getTileAt(i, j);
 
                 this.world[i][j] = 0;
 
                 if (wTile && wTile.index != 1) {
-                    this.world[i][j] = 4;
-                }
-
-                if (iTile) {
                     this.world[i][j] = 4;
                 }
             }
@@ -96,6 +86,40 @@ class BaseScene extends Phaser.Scene {
 
         this.camera.setBounds(0, 0, this.map.width * 16, this.map.height * 16);
     }
+
+    AdddItem(item, x, y, w, h) {
+        x = Math.floor(x / 16);
+        y = Math.floor(y / 16);
+        w = Math.floor(w / 16);
+        h = Math.floor(h / 16);
+
+        for (let i = x; i < x + w; i++) {
+            for (let j = y; j < y + h; j++) {
+                this.world[i][j] = 4;
+                this.items[i][j] = item;
+            }
+        }
+
+        console.log(item);
+    }
+
+    AddItem(item, x, y, w, h) {
+        x = Math.floor(x / 16);
+        y = Math.floor(y / 16);
+        w = Math.floor(w / 16);
+        h = Math.floor(h / 16);
+
+        for (let i = x; i < x + w; i++) {
+            for (let j = y; j < y + h; j++) {
+                this.world[i][j] = 4;
+                this.items[i][j] = item;
+            }
+        }
+
+        console.log(item);
+    }
+
+
 
     update(time, delta) {
         this.entities.forEach(element => element.Update(time, delta));
@@ -113,60 +137,24 @@ class BaseScene extends Phaser.Scene {
     }
 
     ManageInput(x, y) {
-        let iTile = this.itemLayer.getTileAt(x, y);
-        if (iTile) {
-            let closestX = x;
-            let closestY = y;
+        let closestX = x;
+        let closestY = y;
 
-            if (y > this.player.GetY()) {
-                while (this.world[closestX][closestY] != 0) {
-                    closestY--;
-                }
-            } else {
-                while (this.world[closestX][closestY] != 0) {
-                    closestY++;
-                }
-            }
-
-            if (this.player.GetX() == closestX && this.player.GetY() + 1 == closestY) {
-                let idx = iTile.index - 1;
-                switch (idx) {
-                    case 3:
-                    case 13:
-                    case 23:
-                        //Door
-                        //this.CrossDoor(y < this.player.GetY());
-                        this.CrossPatientDoor();
-                        break;
-                    case 14:
-                    case 15:
-                    case 16:
-                    case 24:
-                    case 24:
-                    case 26:
-                        this.ShowClothes();
-                        break;
-                    case 20:
-                    case 21:
-                    case 30:
-                    case 31:
-                        this.ShowSink();
-                        break;
-                    case 81:
-                    case 91:
-                    case 101:
-                        //Door
-                        this.CrossDoor();
-                        break;
-                    default:
-
-                        break;
-                }
-            } else {
-                this.player.FindWay(this.world, closestX, closestY);
+        if (y > this.player.GetY()) {
+            while (this.world[closestX][closestY] != 0) {
+                closestY--;
             }
         } else {
-            this.player.FindWay(this.world, x, y);
+            while (this.world[closestX][closestY] != 0) {
+                closestY++;
+            }
+        }
+
+        let item = this.items[x][y];
+        if (item != null && this.player.GetX() == closestX && this.player.GetY() + 1 == closestY) {
+            item.Interact();
+        } else {
+            this.player.FindWay(this.world, closestX, closestY);
         }
     }
 
@@ -196,9 +184,8 @@ class BaseScene extends Phaser.Scene {
         return true;
     }
 
-    CrossPatientDoor() {
+    CrossPatientDoor(door) {
         let goingIn = !this.inRoom;
-
         if (!this.fading) {
             this.camera.fadeOut(500);
             this.fading = true;
@@ -206,8 +193,9 @@ class BaseScene extends Phaser.Scene {
                 let dist = 5 * 16;
 
                 if (goingIn) {
+                    currentRoom = door.room;
                     this.player.y -= dist;
-                    this.gameController.CheckMistakesGoingIn(currentRoom.patient, this.player);//////////////////////////////////////
+                    this.gameManager.CheckMistakesGoingIn(currentRoom.patient, this.player);//////////////////////////////////////
                 } else {
                     this.player.y += dist;
                     this.player.RemoveAllClothes();
@@ -215,8 +203,9 @@ class BaseScene extends Phaser.Scene {
                     this.player.washedHandsAntiseptic = false;
 
                     if (this.player.carriesTrash && !this.player.firstBag) {
-                        this.gameController({ "mistake": "No has usado la primera bolsa", "val": 1 });
+                        this.gameManager.AddMistake({ "mistake": "No has usado la primera bolsa", "val": 1 });
                     }
+                    currentRoom = null;
                 }
 
                 this.camera.fadeIn(500);
@@ -246,7 +235,7 @@ class BaseScene extends Phaser.Scene {
 
         this.background = this.add.rectangle(240, 135, 350, 180, 0xff6699).setDepth(10).setScrollFactor(0).setOrigin(0.5);
 
-        this.cerrar = this.add.sprite(400, 62, 'cerrar').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
             currentScene.HideClothes();
         });
 
@@ -295,7 +284,7 @@ class BaseScene extends Phaser.Scene {
         }
 
         this.background.destroy();
-        this.cerrar.destroy();
+        this.close.destroy();
     }
 
     ShowSink() {
@@ -308,7 +297,7 @@ class BaseScene extends Phaser.Scene {
             currentScene.WashHands();
         });
 
-        this.cerrar = this.add.sprite(400, 62, 'cerrar').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
             currentScene.HideSink();
         });
     }
@@ -317,7 +306,7 @@ class BaseScene extends Phaser.Scene {
         this.pause = false;
         this.soap.destroy();
         this.background.destroy();
-        this.cerrar.destroy();
+        this.close.destroy();
     }
 
     ShowActions() {
@@ -328,7 +317,7 @@ class BaseScene extends Phaser.Scene {
 
         this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
 
-        this.cerrar = this.add.sprite(400, 62, 'cerrar').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
             currentScene.HideActions();
         });
 
@@ -354,7 +343,7 @@ class BaseScene extends Phaser.Scene {
             this.buttons[i].destroy();
         }
         this.background.destroy();
-        this.cerrar.destroy();
+        this.close.destroy();
     }
 
     BlockTiles(x, y, w, h) {
@@ -364,7 +353,6 @@ class BaseScene extends Phaser.Scene {
         h = Math.floor(h / 16);
         for (let i = x; i < x + w; i++) {
             for (let j = y; j < y + h; j++) {
-                this.world[i][j] = 4;
                 this.world[i][j] = 4;
             }
         }
@@ -384,16 +372,47 @@ class BaseScene extends Phaser.Scene {
     CheckMistakes() {
         let fail = false;
 
-        for (let i = 0; i < mistakes.length; i++) {
-            let m = mistakes[i];
+        for (let i = 0; i < this.gameManager.mistakes.length; i++) {
+            let m = this.gameManager.mistakes[i];
             if (m["val"] > 0) {
                 fail = true;
-                console.log(m["mistake"]);
             }
+            console.log(m["mistake"]);
         }
 
         if (fail) {
             this.EndGame();
         }
+    }
+
+    ShowPatient() {
+        if (this.pause) { return; }
+
+        this.pause = true;
+
+        this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.HidePatient();
+        });
+
+        this.buttons.push(a);
+    }
+
+    HidePatient() {
+        this.pause = false;
+        this.background.destroy();
+        this.close.destroy();
+    }
+
+    TryInteract(item) {
+        if (Phaser.Math.Distance.BetweenPoints(this.player, item) > 50) {
+
+            this.player.FindWay(this.world, 2, 23);
+
+            return false;
+        }
+
+        item.Interact();
     }
 }

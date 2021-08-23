@@ -33,6 +33,7 @@ class Preload extends Phaser.Scene {
         this.load.image('door1', 'resources/items/Door1.png');
         this.load.image('bed', 'resources/items/Bed.png');
         this.load.image('table', 'resources/items/Table.png');
+        this.load.image('trash', 'resources/items/Trash.png');
 
         this.load.image('container1', 'resources/items/Container1.png');
         this.load.image('container2', 'resources/items/Container2.png');
@@ -43,8 +44,8 @@ class Preload extends Phaser.Scene {
         this.load.tilemapTiledJSON('hospital', 'resources/level/hospital.json');
 
         //UI
-        this.load.image('opciones', 'resources/ui/Opciones.png');
-        this.load.image('cerrar', 'resources/ui/Cerrar.png');
+        this.load.image('options', 'resources/ui/Opciones.png');
+        this.load.image('close', 'resources/ui/Cerrar.png');
 
         //Musica
         //this.load.audio("music", "resources/audio/music.ogg"); // Musica fondo
