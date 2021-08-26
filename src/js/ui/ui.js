@@ -49,6 +49,181 @@ class UI extends BaseMenuScene {
     HideGameUI() { }
 
     EnableMenuUI() { }
+
+    ShowPatientInfo(patient) {
+        if (currentScene.pause) { return; }
+
+        currentScene.pause = true;
+
+        this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            ui.HidePatientInfo();
+        });
+
+        this.illness = this.add.text(300, 160, patient.illness, {
+            fontFamily: 'm3x6',
+            fontSize: '32px',
+            color: '#eeeeba',
+            align: 'center'
+        }).setDepth(10).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4);
+    }
+
+    HidePatientInfo() {
+        currentScene.pause = false;
+        this.background.destroy();
+        this.close.destroy();
+        this.illness.destroy();
+    }
+
+    ShowEnd(mistakes) {
+        this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.LoadScene("mainMenu");
+        });
+
+        for (let i = 0; i < mistakes.length; i++) {
+            let m = mistakes[i];
+            /*if (m["val"] > 0) {
+                fail = true;
+            }*/
+
+            this.add.text(70, 30 + (30 * i), m["mistake"], {
+                fontFamily: 'm3x6',
+                fontSize: '32px',
+                color: '#eeeeba',
+                align: 'center'
+            }).setDepth(15).setOrigin(0, 0).setScrollFactor(0).setLineSpacing(4);
+        }
+    }
+
+    ShowClothes() {
+        if (currentScene.pause) { return; }
+        currentScene.pause = true;
+
+        this.background = this.add.rectangle(240, 135, 350, 180, 0xff6699).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            ui.HideClothes();
+        });
+
+        this.clothes = [];
+        let guantes = this.add.sprite(100, 100, 'Guantes').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_GUANTES))
+                guantes.destroy();
+        });
+        this.clothes.push(guantes);
+
+        let gorro = this.add.sprite(140, 100, 'Gorro').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_GORRO))
+                gorro.destroy();
+        });
+        this.clothes.push(gorro);
+
+        let mascarilla = this.add.sprite(200, 100, 'Mascarilla').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_MASCARILLA))
+                mascarilla.destroy();
+        });
+        this.clothes.push(mascarilla);
+
+        let gafas = this.add.sprite(300, 100, 'Gafas').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_GAFAS))
+                gafas.destroy();
+        });
+        this.clothes.push(gafas);
+
+        let calzas = this.add.sprite(140, 200, 'Calzas').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_CALZAS))
+                calzas.destroy();
+        });
+        this.clothes.push(calzas);
+
+        let bata = this.add.sprite(300, 200, 'Bata').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(ID_BATA))
+                bata.destroy();
+        });
+        this.clothes.push(bata);
+    }
+
+    HideClothes() {
+        currentScene.pause = false;
+        for (let i = 0; i < this.clothes.length; i++) {
+            this.clothes[i].destroy();
+        }
+
+        this.background.destroy();
+        this.close.destroy();
+    }
+
+    ShowSink() {
+        if (currentScene.pause) { return; }
+        currentScene.pause = true;
+
+        this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+
+        this.soap = this.add.rectangle(64, 135, 64, 64, 0xff6699).setDepth(10).setScrollFactor(0).setOrigin(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.gameManager.WashHands(false, currentScene.player.WearsAnyClothes());
+            ui.HideSink();
+            currentScene.CheckMistakes();
+        });
+
+        this.soap2 = this.add.rectangle(200, 135, 64, 64, 0x2277ee).setDepth(10).setScrollFactor(0).setOrigin(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.gameManager.WashHands(true, currentScene.player.WearsAnyClothes());
+            ui.HideSink();
+            currentScene.CheckMistakes();
+        });
+
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            ui.HideSink();
+        });
+    }
+
+    HideSink() {
+        currentScene.pause = false;
+        this.soap.destroy();
+        this.soap2.destroy();
+        this.background.destroy();
+        this.close.destroy();
+    }
+
+    ShowActions() {
+        if (currentScene.pause || currentRoom.patient.takenCareOf) { return; }
+
+        currentScene.pause = true;
+
+        this.background = this.add.rectangle(240, 135, 350, 180, 0x5599ff).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+
+        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            ui.HideActions();
+        });
+
+        this.buttons = [];
+
+        let a = this.add.text(300, 160, "aaaaaaaa", {
+            fontFamily: 'm3x6',
+            fontSize: '32px',
+            color: '#eeeeba',
+            align: 'center'
+        }).setDepth(10).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4);
+
+        a.setInteractive().on('pointerdown', function (event) {
+            currentScene.player.CarryTrash(currentRoom.patient.illnessType);
+            currentScene.actionsDone++;
+            currentRoom.patient.takenCareOf = true;
+            ui.HideActions();
+        }, this);
+
+        this.buttons.push(a);
+    }
+
+    HideActions() {
+        currentScene.pause = false;
+        for (let i = 0; i < this.buttons.length; i++) {
+            this.buttons[i].destroy();
+        }
+        this.background.destroy();
+        this.close.destroy();
+    }
 }
 
 //https://stackoverflow.com/questions/11381673/detecting-a-mobile-browser

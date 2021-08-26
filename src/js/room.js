@@ -9,9 +9,6 @@ class Room {
         this.y = y;
 
         this.patient = new Patient(scene, this.x + 5, 114, patientInfo);
-        this.patient.setInteractive().on('pointerdown', function (event) {
-            currentScene.ShowActions();
-        }, this);
 
         this.hasAnteroom = this.patient.illnessType <= 1;
         if (this.hasAnteroom) { this.SetUpRoom2(); } else {
@@ -33,44 +30,41 @@ class Room {
     }
 
     SetUpRoom1() {
-        this.bed = this.scene.add.sprite(this.x, 96, "bed").setDepth(1).setOrigin(0).setInteractive();
-        this.bed.Interact = function () { currentScene.ShowActions(); }
-        this.scene.AddItem(this.bed, this.x, 96 + 16, 48, 32);
+        this.bed = this.scene.AddItem(this.x, 96, "bed");
+        this.bed.Interact = function () { ui.ShowActions(); }
 
-        this.door = this.scene.add.sprite(this.x + 64, 256, "door1").setDepth(1).setOrigin(0).setInteractive();
+        this.door = this.scene.AddItem(this.x + 64, 256, "door1");
         this.door.room = this;
         this.door.Interact = function () {
             this.room.scene.CrossPatientDoor(this)
         }
-        this.scene.AddItem(this.door, this.x + 64, 256, 32, 48);
 
-        this.paper = this.scene.add.rectangle(this.x + 104, 268, 12, 16, 0xffffff).setDepth(1).setOrigin(0).setInteractive();
+        this.paper = this.scene.AddItem(this.x + 96, 272, "paper");
+        this.paper.room = this;
+        this.paper.Interact = function () {
+            ui.ShowPatientInfo(this.room.patient);
+        }
 
-        this.button = this.scene.add.rectangle(this.x + 40, 268, 16, 16, 0xdd0000).setDepth(1).setOrigin(0).setInteractive();
+        this.table = this.scene.AddItem(this.x, 288, "table");
+        this.table.Interact = function () { ui.ShowClothes(); }
 
-
-        this.table = this.scene.add.sprite(this.x, 288, "table").setDepth(1).setOrigin(0).setInteractive();
-        this.table.room = this;
-        this.table.Interact = function () { currentScene.ShowClothes(); }
-        this.scene.AddItem(this.table, this.x, 304, 48, 16);
-
-        this.trashOutside = this.scene.add.sprite(this.x + 102, 288, "trash").setDepth(1).setOrigin(0).setInteractive();
+        this.trashOutside = this.scene.AddItem(this.x + 96, 288, "trash");
         this.trashOutside.Interact = function () {
             if (currentScene.player.carriesTrash) {
                 currentScene.player.secondBag = true;
                 console.log("Segunda bolsa");
             }
         }
-        this.scene.AddItem(this.trashOutside, this.x + 102, 288, 32, 32);
 
-        this.trashInside = this.scene.add.sprite(this.x + 94, 200, "trash").setDepth(1).setOrigin(0).setInteractive();
+        this.trashInside = this.scene.AddItem(this.x + 96, 216, "trash");
         this.trashInside.Interact = function () {
             if (currentScene.player.carriesTrash) {
                 currentScene.player.firstBag = true;
                 console.log("Primera bolsa");
+            } else {
+                console.log("No dus brossa");
             }
         }
-        this.scene.AddItem(this.trashInside, this.x + 94, 200, 32, 32);
     }
 
     SetUpRoom2() { this.SetUpRoom1(); }

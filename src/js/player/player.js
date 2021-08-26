@@ -12,11 +12,8 @@ class Player extends Phaser.GameObjects.Sprite {
     this.scene.add.existing(this);
     this.scene.entities.push(this);
 
-    this.setOrigin(0.5, 0.5);
+    this.setOrigin(0.4, 0.5);
     this.setDepth(9);
-
-    this.washedHands = false;////////////SARA HA ESCRITO AQUI
-    this.washedHandsAntiseptic = false;////////////SARA HA ESCRITO AQUI
 
     this.garments = [];
     for (let i = 0; i <= 5; i++) {
@@ -208,9 +205,11 @@ class Player extends Phaser.GameObjects.Sprite {
           if (difX > 0) {
             this.dirX = 1;
             this.flipX = false;
+            this.setOrigin(0.4, 0.5);
           } else {
             this.dirX = -1;
             this.flipX = true;
+            this.setOrigin(0.6, 0.5);
           }
         } else { this.dirX = 0; }
         if (y) {
@@ -270,15 +269,33 @@ class Player extends Phaser.GameObjects.Sprite {
     return this.garments[idx].visible;
   }
 
+  WearsAnyClothes() {
+    for (const g of this.garments) {
+      if (g.visible) { return true; }
+    }
+    return false;
+  }
+
   RemoveAllClothes() {
     for (const g of this.garments) {
       g.visible = false;
     }
   }
 
-  CarryTrash(patient, id) {
+  CarryTrash(illnessType) {
     this.carriesTrash = true;
-    this.trashId = id;
+    switch (illnessType) {
+      case 0:
+      case 2:
+      case 4:
+        this.trashId = 3;
+        break;
+
+      default:
+        this.trashId = 1;
+        break;
+    }
+
     this.play("idle", true);
   }
 
@@ -324,6 +341,8 @@ class Garment extends Phaser.GameObjects.Sprite {
     this.x = this.player.x;
     this.y = this.player.y;
     this.flipX = this.player.flipX;
+    this.setOrigin(this.player.originX, this.player.originY);
+    //console.log(this.player);
   }
 
   PlayAnim(key, bool) {

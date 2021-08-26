@@ -47,5 +47,7 @@ class Patient extends Phaser.GameObjects.Sprite {
 
         this.illness = info.illness;
         this.illnessType = info.illnessType;
+
+        this.takenCareOf = false;
     }
 }

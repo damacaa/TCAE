@@ -4,6 +4,9 @@ class GameManager {
         this.scene = scene;
         this.patients = [];
         this.mistakes = [];
+        this.treatedPatients = [];
+        this.washedHands = false;
+        this.washedHandsAntiseptic = false;
 
         for (let index = 0; index < MAX_PATIENTS; index++) {
             this.patients.push(new PatientInfo());
@@ -21,22 +24,22 @@ class GameManager {
         //                bata   calzas gafas  mascar gorro guantes
         switch (patient.illnessType) {
             case 0:
-                checks = [true, true, false, true, true, true]
+                checks = [true, true, false, true, true, true, false]
                 break;
             case 1:
-                checks = [true, true, true, true, true, true]
+                checks = [true, true, true, true, true, true, true]
                 break;
             case 2:
-                checks = [false, false, false, true, false, true]
+                checks = [false, false, false, true, false, true, false]
                 break;
             case 3:
-                checks = [true, false, false, false, false, true]
+                checks = [true, false, false, false, false, true, false]
                 break;
             case 4:
-                checks = [true, false, false, true, false, true]
+                checks = [true, false, false, true, false, true, false]
                 break;
             default:
-                checks = [false, false, false, false, false, false]
+                checks = [false, false, false, false, false, false, false]
                 break;
         }
 
@@ -48,31 +51,18 @@ class GameManager {
             }
         }
 
-
-
-        /*if (!player.Wears(ID_BATA)) {
-            mistakes.push({ "mistake": "No llevaba bata", "val": 1 });
+        if (!this.washedHands) { this.mistakes.push({ "mistake": "No t'has llavat les mans!", "val": 1 }); }
+        if (!this.washedHandsAntiseptic && checks[6]) {
+            this.mistakes.push({ "mistake": "No has utilitzat el sabó antisèptic", "val": 1 });
+        } else if (this.washedHandsAntiseptic && !checks[6]) {
+            this.mistakes.push({ "mistake": "No necessitaves el sabó antisèptic", "val": 0 });
         }
-        if (!player.Wears(ID_GUANTES)) {
-            mistakes.push({ "mistake": "No llevaba guantes", "val": 1 });
-        }
-        if (!player.Wears(ID_GORRO)) {
-            mistakes.push({ "mistake": "No llevaba gorro", "val": 1 });
-        }
-        if (!player.Wears(ID_MASCARILLA)) {
-            mistakes.push({ "mistake": "No llevaba mascarilla", "val": 1 });
-        }
-        if (!player.Wears(ID_GAFAS)) {
-            mistakes.push({ "mistake": "No llevaba gafas", "val": 1 });
-        }
-        if (!player.Wears(ID_CALZAS)) {
-            mistakes.push({ "mistake": "No llevaba calzas", "val": 1 });
-        }
-        if (!player.washedHands) {
-            mistakes.push({ "mistake": "No se ha lavado las manos", "val": 1 });
-        }*/
 
         this.UpdateUI();
+
+        //Check if player has visited this room in a wrong order
+
+        this.treatedPatients.push(patient);
     }
 
     CheckMistakesGoingOut(patient, player) {
@@ -102,5 +92,21 @@ class GameManager {
 
     AddMistake(m) {
         this.mistakes.push(m);
+    }
+
+    WashHands(antiseptic, wearsAnyClothes) {
+
+
+        if (wearsAnyClothes) {
+            this.mistakes.push({ "mistake": "T'has llavat les mans després d'haver-te vestit", "val": 0 });
+        }
+
+        this.washedHands = true;////////////SARA HA ESCRITO AQUI
+        if (antiseptic) {
+            console.log("Washing hands with antiseptic");
+            this.washedHandsAntiseptic = true;
+        } else {
+            console.log("Washing hands");
+        }
     }
 }

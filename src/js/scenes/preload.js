@@ -34,6 +34,8 @@ class Preload extends Phaser.Scene {
         this.load.image('bed', 'resources/items/Bed.png');
         this.load.image('table', 'resources/items/Table.png');
         this.load.image('trash', 'resources/items/Trash.png');
+        this.load.image('paper', 'resources/items/Paper.png');
+        this.load.image('sink', 'resources/items/Sink.png');
 
         this.load.image('container1', 'resources/items/Container1.png');
         this.load.image('container2', 'resources/items/Container2.png');
