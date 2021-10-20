@@ -57,11 +57,13 @@ class MainMenu extends BaseMenuScene {
         this.scene.launch('ui');
 
         this.start = this.add.text(240, 135, "Jugar", {
-            fontFamily: 'm3x6',
+            fontFamily: 'BetterPixelsAcce',
             fontSize: '32px',
             color: '#eeeeba',
             align: 'left'
-        }).setDepth(10).setOrigin(.5).setScrollFactor(0).setLineSpacing(4);
+        }).setDepth(10).setOrigin(.5).setScrollFactor(0).setLineSpacing(4).setResolution(3);
+
+        this.background = this.add.rectangle(240, 135, 480, 270, 0x5599ff).setDepth(0).setScrollFactor(0).setOrigin(0.5);
 
         this.start.on('pointerdown', function (event) {
 
@@ -72,6 +74,5 @@ class MainMenu extends BaseMenuScene {
         }, this);
 
         this.cameras.main.fadeIn(500);
-        //this.scene.start("game");
     }
 }

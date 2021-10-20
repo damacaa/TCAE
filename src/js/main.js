@@ -11,17 +11,6 @@ window.onload = function () {
             autoCenter: Phaser.Scale.CENTER_BOTH,
             width: 480,
             height: 270,
-        },
-        input: {
-            gamepad: true
-        },
-        physics: {
-            default: 'arcade',
-
-            arcade: {
-                gravity: { y: 981 },
-                //debug: true
-            }
         }, fps: {
             target: 30,
             forceSetTimeOut: true
@@ -30,6 +19,7 @@ window.onload = function () {
     }
 
     loadFont("m3x6", "resources/fonts/m3x6.ttf");
+    loadFont("BetterPixelsAcce", "resources/fonts/BetterPixelsAcce.ttf");
 
     game = new Phaser.Game(config);
 }

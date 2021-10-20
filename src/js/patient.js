@@ -1,4 +1,4 @@
-let malaltiesEsctrictes = ["Carboncle pulmonar", "diftèria", "Staphylococcus aureus", "Estreptococos de tipus A", "Pèmfig del neunat", "Pesta", "Cremada extensa infectada", "Ràbia", "Varicel·la", "Herpes zòster disseminat", "Malatia pel virus de Marburg", "Ebola"]
+let malaltiesEsctrictes = ["Carboncle pulmonar", "Diftèria", "Staphylococcus aureus", "Estreptococos de tipus A", "Pèmfig del neunat", "Pesta", "Cremada extensa infectada", "Ràbia", "Varicel·la", "Herpes zòster disseminat", "Malatia pel virus de Marburg", "Ebola"]
 let malaltiesProtectores = ["Agranulocitosi", "Dermatitis extensa no infectada", "Paciente immunodreprimit", "Trasplant", "Limfoma", "Leucèmia", "Cremada extensa", "Prematur"];
 let malaltiesRespiratories = ["Tuberculosi pulmonar", "Pneumònia", "Tos ferina", "Xarampió", "Rubèola", "Parotiditis", "Infecció meningocòccica"];
 let malaltiesEnteriques = ["Gastroenteritis per Escherichia coli", "Enterocolitis", "Còlera", "Febre tifoide", "Meningitis", "Salmonel·losi", "Poliomielitis", "Disenteries", "Hepatitis A", "Hepatitis B", "Hepatitis no A", "Hepatitis delta"];

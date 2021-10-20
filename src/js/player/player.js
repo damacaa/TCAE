@@ -15,6 +15,10 @@ class Player extends Phaser.GameObjects.Sprite {
     this.setOrigin(0.4, 0.5);
     this.setDepth(9);
 
+    this.foundRoute = false;
+    this.showWay = true;
+    this.item = null;
+
     this.garments = [];
     for (let i = 0; i <= 5; i++) {
       let g = new Garment(scene, x, y, i, this);
@@ -63,13 +67,16 @@ class Player extends Phaser.GameObjects.Sprite {
     this.secondBag = false;
   }
 
-  FindWay(world, endX, endY) {
+  FindWay(world, endX, endY, item) {
 
-
-    for (let s of this.steps) {
-      s.destroy();
+    if (this.showWay) {
+      for (let s of this.steps) {
+        s.destroy();
+      }
     }
 
+    this.item = item;
+    this.foundRoute = true;
     this.way = [];
     this.steps = [];
 
@@ -153,10 +160,13 @@ class Player extends Phaser.GameObjects.Sprite {
         if (current.x == endX && current.y == endY) {
           while (current.parent) {
             let w = { x: current.x * 16 + 8, y: current.y * 16 - 8 };
-            this.steps.push(this.scene.add.rectangle(w.x, w.y, 3, 3, 0xffffff).setDepth(10).setOrigin(0.5, 0.5));
+            if (this.showWay) {
+              this.steps.push(this.scene.add.rectangle(w.x, w.y, 3, 3, 0xffffff).setDepth(10).setOrigin(0.5, 0.5).setAlpha(0.1));
+            }
             this.way.push(w);
             current = current.parent;
           }
+          this.foundRoute = true;
           return;
         } else {
           for (let i = -1; i < 2; i++) {
@@ -190,7 +200,7 @@ class Player extends Phaser.GameObjects.Sprite {
   }
 
   Update(time, delta) {
-    if (!this.scene) { return; }
+    if (!this.scene || !this.foundRoute) { return; }
 
     if (this.way.length >= 1) {
       let idx = this.way.length - 1;
@@ -223,14 +233,20 @@ class Player extends Phaser.GameObjects.Sprite {
         } else { this.dirY = 0; }
       } else {
         this.way.pop()
-        this.steps[idx].destroy();
-        this.steps.pop();
+        if (this.showWay) {
+          this.steps[idx].destroy();
+          this.steps.pop();
+        }
       }
 
     } else {
       this.dirX = 0;
       this.dirY = 0;
       this.PlayAnim('idle', true);
+      if (this.item) {
+        this.item.Interact();
+        this.item = null;
+      }
     }
 
     this.x += delta * this.speed * this.dirX / 100;

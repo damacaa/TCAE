@@ -2,6 +2,10 @@ const MAX_PATIENTS = 5;
 class GameManager {
     constructor(scene) {
         this.scene = scene;
+        this.Reset();
+    }
+
+    Reset() {
         this.patients = [];
         this.mistakes = [];
         this.treatedPatients = [];
@@ -13,7 +17,7 @@ class GameManager {
         }
 
         for (let i = 0; i < 4; i++) {
-            scene.rooms.push(new Room(scene, 112 + (128 * i), 0, this.patients[i]));
+            this.scene.rooms.push(new Room(this.scene, 112 + (128 * i), 0, this.patients[i]));
         }
     }
 
@@ -58,9 +62,14 @@ class GameManager {
             this.mistakes.push({ "mistake": "No necessitaves el sabó antisèptic", "val": 0 });
         }
 
-        this.UpdateUI();
-
         //Check if player has visited this room in a wrong order
+        if (patient.illnessType != 0 && patient.illnessType != 4) {
+            for (let i = 0; i < this.treatedPatients.length; i++) {
+                if (patient.illnessType == 0 && patient.illnessType == 4) {
+                    this.mistakes.push({ "mistake": "No has seguit l'ordre correcte", "val": 1 });
+                }
+            }
+        }
 
         this.treatedPatients.push(patient);
     }
@@ -78,17 +87,27 @@ class GameManager {
         if (!player.carriesTrash) { return; }
 
         if (index != player.trashId) {
-            this.mistakes.push({ "mistake": "Contendor incorrecto", "val": 1 });
+            this.mistakes.push({ "mistake": "Contenidor incorrecte", "val": 1 });
         }
 
         if (!player.secondBag) {
-            this.mistakes.push({ "mistake": "No has usado la segunda bolsa", "val": 1 });
+            this.mistakes.push({ "mistake": "No has usat la segona bossa", "val": 1 });
         }
 
         player.ThrowTrash();
     }
 
-    UpdateUI() { }
+    CheckRoomMistakes(pressures, roomTypes) {
+        for (let i = 0; i < this.scene.rooms.length; i++) {
+            if (pressures[i] != this.scene.rooms[i].pressure) {
+                this.mistakes.push({ "mistake": "La pressió de l'habitació " + i + " no és correcta", "val": 1 });
+            }
+
+            if (roomTypes[i] != this.scene.rooms[i].hasAnteroom) {
+                this.mistakes.push({ "mistake": "No has triat l'habitació correcta per al pacient " + i, "val": 1 });
+            }
+        }
+    }
 
     AddMistake(m) {
         this.mistakes.push(m);

@@ -7,8 +7,11 @@ class Room {
         this.scene = scene;
         this.x = x;
         this.y = y;
+        this.items = [];
 
         this.patient = new Patient(scene, this.x + 5, 114, patientInfo);
+        this.patient.room = this;
+
 
         this.hasAnteroom = this.patient.illnessType <= 1;
         if (this.hasAnteroom) { this.SetUpRoom2(); } else {
@@ -27,26 +30,32 @@ class Room {
                 this.pressure = NO_PRESSURE;
                 break;
         }
+
+
     }
 
     SetUpRoom1() {
         this.bed = this.scene.AddItem(this.x, 96, "bed");
         this.bed.Interact = function () { ui.ShowActions(); }
+        this.items.push(this.bed);
 
         this.door = this.scene.AddItem(this.x + 64, 256, "door1");
         this.door.room = this;
         this.door.Interact = function () {
             this.room.scene.CrossPatientDoor(this)
         }
+        this.items.push(this.door);
 
         this.paper = this.scene.AddItem(this.x + 96, 272, "paper");
         this.paper.room = this;
         this.paper.Interact = function () {
             ui.ShowPatientInfo(this.room.patient);
         }
+        this.items.push(this.paper);
 
         this.table = this.scene.AddItem(this.x, 288, "table");
         this.table.Interact = function () { ui.ShowClothes(); }
+        this.items.push(this.table);
 
         this.trashOutside = this.scene.AddItem(this.x + 96, 288, "trash");
         this.trashOutside.Interact = function () {
@@ -55,6 +64,7 @@ class Room {
                 console.log("Segunda bolsa");
             }
         }
+        this.items.push(this.trashOutside);
 
         this.trashInside = this.scene.AddItem(this.x + 96, 216, "trash");
         this.trashInside.Interact = function () {
@@ -65,6 +75,7 @@ class Room {
                 console.log("No dus brossa");
             }
         }
+        this.items.push(this.trashInside);
     }
 
     SetUpRoom2() { this.SetUpRoom1(); }
@@ -86,6 +97,13 @@ class Room {
 
             default:
                 break;
+        }
+    }
+
+    Destroy() {
+        this.patient.destroy();
+        for (let i = 0; i < this.items.length; i++) {
+            this.items[i].destroy();
         }
     }
 }

@@ -29,12 +29,15 @@ class BaseScene extends Phaser.Scene {
         this.camera.once('camerafadeincomplete', () => {
             this.fading = false;
         });
+        this.t = 0;
+
+        this.pointer = this.input.activePointer;
 
         this.LoadTileMap();
 
         //Adding containers
         for (let index = 1; index <= 4; index++) {
-            let container = this.AddItem(16 * index, 48, "container" + index);
+            let container = this.AddItem(16 * (39 + index), 146, "container" + index);
             container.Interact = function () {
                 currentScene.gameManager.CheckTrash(index, currentScene.player);
                 currentScene.CheckMistakes();
@@ -49,7 +52,7 @@ class BaseScene extends Phaser.Scene {
         sink = this.AddItem(16 * 39, 13 + (11 * 25), "sink");
         sink.Interact = function () { ui.ShowSink(); }
 
-        this.player = new Player(this, 16, (this.map.height - 1) * 16);
+        this.player = new Player(this, 16, (this.map.height - 2) * 16);
         this.camera.startFollow(this.player);
 
         this.gameManager = new GameManager(this);
@@ -62,6 +65,43 @@ class BaseScene extends Phaser.Scene {
                 this.ManageInput(x, y);
             }
         }, this);
+
+        //this.EnableLighting();
+        ui.ShowRoomManager();
+    }
+
+    Reset() {
+        this.actionsDone = 0;
+
+        this.player.x = 16;
+        this.player.y = (this.map.height - 2) * 16;
+        for (let i = 0; i < this.rooms.length; i++) {
+            this.rooms[i].Destroy();
+        }
+
+        for (var i = 6; i < 38; i++) {
+            for (var j = 0; j < 24; j++) {
+                if (this.items[i][j]) {
+                    this.items[i][j] = null;
+                    this.world[i][j] = 0;
+                }
+            }
+        }
+
+        this.gameManager.Reset();
+    }
+
+    EnableLighting() {
+        this.lights.enable();
+
+        this.lights.setAmbientColor(0x808080);
+
+        this.lights.addLight(300, 300, 100, 0xeeeeba, 1);
+
+        for (let i = 0; i < this.children.list.length; i++) {
+
+            this.children.list[i].setPipeline('Light2D');
+        }
     }
 
     LoadTileMap() {
@@ -111,14 +151,38 @@ class BaseScene extends Phaser.Scene {
             }
         }
 
-        let hitbox = this.add.rectangle(x * 16, y * 16, w * 16, h * 16, 0xff0000).setDepth(1).setOrigin(0);
-        hitbox.alpha = 0.2;
+        /*let hitbox = this.add.rectangle(x * 16, y * 16, w * 16, h * 16, 0xff0000).setDepth(1).setOrigin(0);
+        hitbox.alpha = 0.2;*/
 
         return item;
     }
 
     update(time, delta) {
+        /*this.t += delta / 10000;
+
+        let r = Math.floor(this.t * 255 + (1 - this.t) * 0);
+        let g = Math.floor(this.t * 51 + (1 - this.t) * 128);
+        let b = Math.floor(this.t * 51 + (1 - this.t) * 255);
+
+        this.camera.setBackgroundColor(`rgba(${r},${g},${b}, 1)`);
+        if (this.t >= 1) {
+            this.t = 0;
+        }*/
+
+        if (this.pause) return;
+
         this.entities.forEach(element => element.Update(time, delta));
+
+        let x = Math.floor(this.pointer.worldX / 16);
+        let y = Math.floor(this.pointer.worldY / 16);
+
+        let item = this.items[x][y];
+        if (item) {
+            ui.ShowSelectedItem(item.texture.key)
+            //console.log(item);
+        } else {
+            ui.ShowSelectedItem(" ")
+        }
     }
 
     LoadScene(key) {
@@ -136,22 +200,24 @@ class BaseScene extends Phaser.Scene {
         let closestX = x;
         let closestY = y;
 
-        if (y > this.player.GetY()) {
-            while (this.world[closestX][closestY] != 0) {
-                closestY--;
-            }
-        } else {
-            while (this.world[closestX][closestY] != 0) {
-                closestY++;
-            }
+        while (this.world[closestX][closestY] != 0) {
+            closestY++;
         }
 
         let item = this.items[x][y];
-        if (item != null && this.player.GetX() == closestX && this.player.GetY() + 1 == closestY) {
-            item.Interact();
+        this.player.FindWay(this.world, closestX, closestY, item);
+
+        /*if (item == null) {
+            this.player.FindWay(this.world, closestX, closestY, null);
+        } else  (this.player.GetX() == closestX && this.player.GetY() + 1 == closestY) {
+            this.player.FindWay(this.world, closestX, closestY, null);
+        }*/
+
+        /*if (item != null && ) {
+            
         } else {
-            this.player.FindWay(this.world, closestX, closestY);
-        }
+
+        }*/
     }
 
     CrossDoor() {
@@ -245,7 +311,7 @@ class BaseScene extends Phaser.Scene {
 
 
     NextDay() {
-        this.EndGame();
+        this.Reset();
     }
 
     CheckMistakes() {
@@ -261,7 +327,7 @@ class BaseScene extends Phaser.Scene {
 
         if (fail) {
             //this.gameManager.mistakes = [];
-            this.EndGame();
+            //this.EndGame();
         }
     }
 
