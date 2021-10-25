@@ -22,7 +22,7 @@ class BaseScene extends Phaser.Scene {
 
         this.camera = this.cameras.main;
         this.camera.setOrigin(0.5, 0.5);
-        this.camera.setBackgroundColor('rgba(60,90,10, 1)');
+        this.camera.setBackgroundColor('#faaf89');
         //this.camera.setRenderToTexture(customPipeline);//Activa el shader
         this.fading = false;
         this.camera.fadeIn(500);
@@ -38,6 +38,7 @@ class BaseScene extends Phaser.Scene {
         //Adding containers
         for (let index = 1; index <= 4; index++) {
             let container = this.AddItem(16 * (39 + index), 146, "container" + index);
+            container.name = "Contenidor de tipus " + index;
             container.Interact = function () {
                 currentScene.gameManager.CheckTrash(index, currentScene.player);
                 currentScene.CheckMistakes();
@@ -48,9 +49,15 @@ class BaseScene extends Phaser.Scene {
         }
 
         let sink = this.AddItem(16 * 4, 11 * 16, "sink");
-        sink.Interact = function () { ui.ShowSink(); }
+        sink.name = "Llavar-se les mans";
+        sink.Interact = function () {
+            ui.ShowSink();
+        }
         sink = this.AddItem(16 * 39, 13 + (11 * 25), "sink");
-        sink.Interact = function () { ui.ShowSink(); }
+        sink.name = "Llavar-se les mans";
+        sink.Interact = function () {
+            ui.ShowSink();
+        }
 
         this.player = new Player(this, 16, (this.map.height - 2) * 16);
         this.camera.startFollow(this.player);
@@ -105,7 +112,9 @@ class BaseScene extends Phaser.Scene {
     }
 
     LoadTileMap() {
-        this.map = this.make.tilemap({ key: "hospital" });
+        this.map = this.make.tilemap({
+            key: "hospital"
+        });
         this.tiles = this.map.addTilesetImage('sprites', 'atlas_extruded', 16, 16, 1, 2);
         this.wallLayer = this.map.createLayer('Walls', this.tiles, 0, 0).setDepth(-1);
         this.itemLayer = this.map.createLayer('Items', this.tiles, 0, 0).setDepth(1);
@@ -113,8 +122,8 @@ class BaseScene extends Phaser.Scene {
         let columns = this.map.width;
         let rows = this.map.height;
 
-        this.world = new Array(columns);//Stores the tiles the character can walk through
-        this.items = new Array(columns);//Stores the item in every tile
+        this.world = new Array(columns); //Stores the tiles the character can walk through
+        this.items = new Array(columns); //Stores the item in every tile
 
         for (var i = 0; i < this.world.length; i++) {
             this.world[i] = new Array(rows);
@@ -178,7 +187,7 @@ class BaseScene extends Phaser.Scene {
 
         let item = this.items[x][y];
         if (item) {
-            ui.ShowSelectedItem(item.texture.key)
+            ui.ShowSelectedItem(item.name)
             //console.log(item);
         } else {
             ui.ShowSelectedItem(" ")
@@ -232,7 +241,7 @@ class BaseScene extends Phaser.Scene {
                     this.player.y -= dist;
                 } else {
                     this.player.y += dist;
-                    this.player.washedHands = false;////////SARA HA ESCRITO AQUI
+                    this.player.washedHands = false; ////////SARA HA ESCRITO AQUI
                     this.player.washedHandsAntiseptic = false;
                 }
                 this.camera.fadeIn(500);
@@ -258,15 +267,18 @@ class BaseScene extends Phaser.Scene {
                 if (goingIn) {
                     currentRoom = door.room;
                     this.player.y = door.y - 36;
-                    this.gameManager.CheckMistakesGoingIn(currentRoom.patient, this.player);//////////////////////////////////////
+                    this.gameManager.CheckMistakesGoingIn(currentRoom.patient, this.player); //////////////////////////////////////
                 } else {
                     this.player.y = door.y + 56;
                     this.player.RemoveAllClothes();
-                    this.player.washedHands = false;////////////SARA HA ESCRITO AQUI
+                    this.player.washedHands = false; ////////////SARA HA ESCRITO AQUI
                     this.player.washedHandsAntiseptic = false;
 
                     if (this.player.carriesTrash && !this.player.firstBag) {
-                        this.gameManager.AddMistake({ "mistake": "No has usado la primera bolsa", "val": 1 });
+                        this.gameManager.AddMistake({
+                            "mistake": "No has usado la primera bolsa",
+                            "val": 1
+                        });
                     }
                     currentRoom = null;
                 }

@@ -3,6 +3,8 @@ let malaltiesProtectores = ["Agranulocitosi", "Dermatitis extensa no infectada",
 let malaltiesRespiratories = ["Tuberculosi pulmonar", "Pneumònia", "Tos ferina", "Xarampió", "Rubèola", "Parotiditis", "Infecció meningocòccica"];
 let malaltiesEnteriques = ["Gastroenteritis per Escherichia coli", "Enterocolitis", "Còlera", "Febre tifoide", "Meningitis", "Salmonel·losi", "Poliomielitis", "Disenteries", "Hepatitis A", "Hepatitis B", "Hepatitis no A", "Hepatitis delta"];
 let malaltiesCutaneomucoses = ["Cremada limitada", "Gangrena gasosa", "Ferides molt infectades", "Abscessos", "Candidiasi cutània", "Sarna", "Impetigen"]
+let illnessTypes = ["Estricte", "Protector", "Respiratori", "Entèric", "Cutaneomucós"];
+
 
 class PatientInfo {
     constructor() {

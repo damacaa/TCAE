@@ -37,6 +37,7 @@ class Room {
     SetUpRoom1() {
         this.bed = this.scene.AddItem(this.x, 96, "bed");
         this.bed.Interact = function () { ui.ShowActions(); }
+        this.bed.name = "Pacient"
         this.items.push(this.bed);
 
         this.door = this.scene.AddItem(this.x + 64, 256, "door1");
@@ -44,6 +45,7 @@ class Room {
         this.door.Interact = function () {
             this.room.scene.CrossPatientDoor(this)
         }
+        this.door.name = "Entrar a l'habitació"
         this.items.push(this.door);
 
         this.paper = this.scene.AddItem(this.x + 96, 272, "paper");
@@ -51,10 +53,12 @@ class Room {
         this.paper.Interact = function () {
             ui.ShowPatientInfo(this.room.patient);
         }
+        this.paper.name = "Informació sobre el pacient"
         this.items.push(this.paper);
 
         this.table = this.scene.AddItem(this.x, 288, "table");
         this.table.Interact = function () { ui.ShowClothes(); }
+        this.table.name = "Vestir-se";
         this.items.push(this.table);
 
         this.trashOutside = this.scene.AddItem(this.x + 96, 288, "trash");
@@ -64,6 +68,7 @@ class Room {
                 console.log("Segunda bolsa");
             }
         }
+        this.trashOutside.name = "Poal de fem";
         this.items.push(this.trashOutside);
 
         this.trashInside = this.scene.AddItem(this.x + 96, 216, "trash");
@@ -75,6 +80,7 @@ class Room {
                 console.log("No dus brossa");
             }
         }
+        this.trashInside.name = "Poal de fem";
         this.items.push(this.trashInside);
     }
 
