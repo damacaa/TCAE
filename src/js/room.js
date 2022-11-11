@@ -1,28 +1,116 @@
+const NO_PRESSURE = 0;
+const POS_PRESSURE = 1;
+const NEG_PRESSURE = 2;
+
 class Room {
-    constructor(scene, x, y) {
+    constructor(scene, x, y, patientInfo) {
         this.scene = scene;
         this.x = x;
         this.y = y;
+        this.items = [];
 
-        this.patient = new Patient(scene, x + 5, 100);
-        this.door = scene.add.rectangle(x + 64, 256, 32, 48, 0xff0000).setDepth(1).setOrigin(0).setInteractive();
-        this.door.on('pointerdown', function (event) {
-            if (scene.CrossPatientDoor()) {
-                currentRoom = this;
+        this.patient = new Patient(scene, this.x + 5, 114, patientInfo);
+        this.patient.room = this;
+
+
+        this.hasAnteroom = this.patient.illnessType <= 1;
+        if (this.hasAnteroom) { this.SetUpRoom2(); } else {
+            this.SetUpRoom1();
+        }
+
+        switch (patientInfo.illnessType) {
+            case 0:
+            case 2:
+                this.pressure = NEG_PRESSURE;
+                break;
+            case 1:
+                this.pressure = POS_PRESSURE;
+                break;
+            default:
+                this.pressure = NO_PRESSURE;
+                break;
+        }
+
+
+    }
+
+    SetUpRoom1() {
+        this.bed = this.scene.AddItem(this.x, 96, "bed");
+        this.bed.Interact = function () { ui.ShowActions(); }
+        this.bed.name = "Pacient"
+        this.items.push(this.bed);
+
+        this.door = this.scene.AddItem(this.x + 64, 256, "door1");
+        this.door.room = this;
+        this.door.Interact = function () {
+            this.room.scene.CrossPatientDoor(this)
+        }
+        this.door.name = "Entrar a l'habitació"
+        this.items.push(this.door);
+
+        this.paper = this.scene.AddItem(this.x + 96, 272, "paper");
+        this.paper.room = this;
+        this.paper.Interact = function () {
+            ui.ShowPatientInfo(this.room.patient);
+        }
+        this.paper.name = "Informació sobre el pacient"
+        this.items.push(this.paper);
+
+        this.table = this.scene.AddItem(this.x, 288, "table");
+        this.table.Interact = function () { ui.ShowClothes(); }
+        this.table.name = "Vestir-se";
+        this.items.push(this.table);
+
+        this.trashOutside = this.scene.AddItem(this.x + 96, 288, "trash");
+        this.trashOutside.Interact = function () {
+            if (currentScene.player.carriesTrash) {
+                currentScene.player.secondBag = true;
+                console.log("Segunda bolsa");
             }
-        }, this);
+        }
+        this.trashOutside.name = "Poal de fem";
+        this.items.push(this.trashOutside);
 
-        this.paper = scene.add.rectangle(x + 104, 268, 12, 16, 0xffffff).setDepth(1).setOrigin(0).setInteractive();
-        this.paper.on('pointerdown', function (event) {
-            console.log(this.patient.illness);
-        }, this);
+        this.trashInside = this.scene.AddItem(this.x + 96, 216, "trash");
+        this.trashInside.Interact = function () {
+            if (currentScene.player.carriesTrash) {
+                currentScene.player.firstBag = true;
+                console.log("Primera bolsa");
+            } else {
+                console.log("No dus brossa");
+            }
+        }
+        this.trashInside.name = "Poal de fem";
+        this.items.push(this.trashInside);
+    }
 
-        this.table = scene.add.rectangle(x, 288, 48, 32, 0x33FFA2).setDepth(1).setOrigin(0).setInteractive();
-        this.table.on('pointerdown', function (event) {
-            currentScene.ShowClothes();
-        }, this);
+    SetUpRoom2() { this.SetUpRoom1(); }
 
-        this.trashOutside = scene.add.rectangle(x + 102, 288, 16, 32, 0x5f5f6f).setDepth(1).setOrigin(0).setInteractive();
+    ChangePressure() {
+        this.pressure++;
+        if (this.pressure > 2) { this.pressure = 0; }
+
+        switch (this.pressure) {
+            case NO_PRESSURE:
+                console.log("No hay presión");
+                break;
+            case POS_PRESSURE:
+                console.log("Presión positiva");
+                break;
+            case NEG_PRESSURE:
+                console.log("Presión negativa");
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    Destroy() {
+        this.patient.destroy();
+        for (let i = 0; i < this.items.length; i++) {
+            this.items[i].destroy();
+        }
     }
 }
 

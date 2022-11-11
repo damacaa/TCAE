@@ -1,0 +1,24 @@
+{ "frames": {
+   "Tile_sheet.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 160, "h": 176 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 160, "h": 176 },
+    "sourceSize": { "w": 160, "h": 176 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.21-dev",
+  "image": "Tile_sheet.png",
+  "format": "RGBA8888",
+  "size": { "w": 160, "h": 176 },
+  "scale": "1",
+  "slices": [
+   { "name": "Bed", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 80, "w": 48, "h": 48 } }] },
+   { "name": "Door1", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 32, "y": 0, "w": 32, "h": 48 } }] },
+   { "name": "Door2", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 128, "w": 32, "h": 48 } }] }
+  ]
+ }
+}

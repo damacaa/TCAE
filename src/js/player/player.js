@@ -12,10 +12,12 @@ class Player extends Phaser.GameObjects.Sprite {
     this.scene.add.existing(this);
     this.scene.entities.push(this);
 
-    this.setOrigin(0.5, 0.5);
+    this.setOrigin(0.4, 0.5);
     this.setDepth(9);
 
-    this.washedHands=false;////////////SARA HA ESCRITO AQUI
+    this.foundRoute = false;
+    this.showWay = true;
+    this.item = null;
 
     this.garments = [];
     for (let i = 0; i <= 5; i++) {
@@ -54,19 +56,27 @@ class Player extends Phaser.GameObjects.Sprite {
 
     this.PlayAnim('idle', true);
 
-    this.speed = 190;
+    this.speed = 15;
     this.dirX = 0;
     this.dirY = 0;
     this.way = [];
     this.steps = [];
     this.carriesTrash = false;
+    this.trashId = 0;
+    this.firstBag = false;
+    this.secondBag = false;
   }
 
-  FindWay(world, endX, endY) {
-    for (let s of this.steps) {
-      s.destroy();
+  FindWay(world, endX, endY, item) {
+
+    if (this.showWay) {
+      for (let s of this.steps) {
+        s.destroy();
+      }
     }
 
+    this.item = item;
+    this.foundRoute = true;
     this.way = [];
     this.steps = [];
 
@@ -128,8 +138,7 @@ class Player extends Phaser.GameObjects.Sprite {
       let current = openList[0];
 
       let count = 0;
-
-      while (openList.length > 0 && count < 999999) {
+      while (openList.length > 0 && count < 1000) {
         count++;
         current.cell.state = 4;
 
@@ -151,10 +160,13 @@ class Player extends Phaser.GameObjects.Sprite {
         if (current.x == endX && current.y == endY) {
           while (current.parent) {
             let w = { x: current.x * 16 + 8, y: current.y * 16 - 8 };
-            this.steps.push(this.scene.add.rectangle(w.x, w.y, 3, 3, 0xffffff).setDepth(10).setOrigin(0.5, 0.5));
+            if (this.showWay) {
+              this.steps.push(this.scene.add.rectangle(w.x, w.y, 3, 3, 0xffffff).setDepth(10).setOrigin(0.5, 0.5).setAlpha(0.1));
+            }
             this.way.push(w);
             current = current.parent;
           }
+          this.foundRoute = true;
           return;
         } else {
           for (let i = -1; i < 2; i++) {
@@ -188,6 +200,8 @@ class Player extends Phaser.GameObjects.Sprite {
   }
 
   Update(time, delta) {
+    if (!this.scene || !this.foundRoute) { return; }
+
     if (this.way.length >= 1) {
       let idx = this.way.length - 1;
       let x = Math.abs(this.way[idx].x - this.x) > 4;
@@ -201,9 +215,11 @@ class Player extends Phaser.GameObjects.Sprite {
           if (difX > 0) {
             this.dirX = 1;
             this.flipX = false;
+            this.setOrigin(0.4, 0.5);
           } else {
             this.dirX = -1;
             this.flipX = true;
+            this.setOrigin(0.6, 0.5);
           }
         } else { this.dirX = 0; }
         if (y) {
@@ -217,28 +233,34 @@ class Player extends Phaser.GameObjects.Sprite {
         } else { this.dirY = 0; }
       } else {
         this.way.pop()
-        this.steps[idx].destroy();
-        this.steps.pop();
+        if (this.showWay) {
+          this.steps[idx].destroy();
+          this.steps.pop();
+        }
       }
 
     } else {
       this.dirX = 0;
       this.dirY = 0;
       this.PlayAnim('idle', true);
+      if (this.item) {
+        this.item.Interact();
+        this.item = null;
+      }
     }
 
-    this.x += delta / 10 * this.dirX;
-    this.y += delta / 10 * this.dirY;
+    this.x += delta * this.speed * this.dirX / 100;
+    this.y += delta * this.speed * this.dirY / 100;
   }
 
   PlayAnim(key, bool) {
-    if (this.carriesTrash) {
+    if (this.firstBag || this.secondBag) {
       this.anims.play(key + "Trash", bool);
     } else {
       this.anims.play(key, bool);
-      for (const g of this.garments) {
-        g.PlayAnim(key, bool);
-      }
+    }
+    for (const g of this.garments) {
+      g.PlayAnim(key, bool);
     }
   }
 
@@ -263,18 +285,40 @@ class Player extends Phaser.GameObjects.Sprite {
     return this.garments[idx].visible;
   }
 
+  WearsAnyClothes() {
+    for (const g of this.garments) {
+      if (g.visible) { return true; }
+    }
+    return false;
+  }
+
   RemoveAllClothes() {
     for (const g of this.garments) {
       g.visible = false;
     }
   }
 
-  CarryTrash() {
+  CarryTrash(illnessType) {
     this.carriesTrash = true;
+    switch (illnessType) {
+      case 0:
+      case 2:
+      case 4:
+        this.trashId = 3;
+        break;
+
+      default:
+        this.trashId = 1;
+        break;
+    }
+
     this.play("idle", true);
   }
 
   ThrowTrash() {
+    this.trashId = 0;
+    this.firstBag = false;
+    this.secondBag = false;
     this.carriesTrash = false;
   }
 }
@@ -313,6 +357,8 @@ class Garment extends Phaser.GameObjects.Sprite {
     this.x = this.player.x;
     this.y = this.player.y;
     this.flipX = this.player.flipX;
+    this.setOrigin(this.player.originX, this.player.originY);
+    //console.log(this.player);
   }
 
   PlayAnim(key, bool) {

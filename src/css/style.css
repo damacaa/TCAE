@@ -5,11 +5,18 @@ body {
   background-color: #a8ccd8;
   margin: 0px;
 }
-h1{
+
+h1 {
   font-size: 2.5rem;
   color: white;
 }
+
 p {
-    font-size: 10pt;
-    color: white;
+  font-size: 10pt;
+  color: white;
 }
+
+/*@font-face {
+  font-family: BetterPixelsAcce;
+  src: url('./BetterPixelsAcce.ttf');
+}*/

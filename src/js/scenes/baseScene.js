@@ -2,38 +2,67 @@ class BaseScene extends Phaser.Scene {
     constructor() {
         super("game");
         this.player;
-        this.entities = [];
         this.fading;
         this.gamepad;
+    }
+
+    create() {
+        ui.EnableGameUI();
+        currentScene = this;
+        this.entities = [];
 
         this.pause = false;
         this.inRoom = false;
         this.inCorridor = true;
         this.clothes = [];
         this.rooms = [];
-    }
 
-
-    create() {
-        ui.EnableGameUI();
-        currentScene = this;
+        this.fail = false;
+        this.actionsDone = 0;
 
         this.camera = this.cameras.main;
         this.camera.setOrigin(0.5, 0.5);
-        this.camera.setBackgroundColor('rgba(60,90,10, 1)');
-        this.camera.setRenderToTexture(customPipeline);//Activa el shader
+        this.camera.setBackgroundColor('#faaf89');
+        //this.camera.setRenderToTexture(customPipeline);//Activa el shader
         this.fading = false;
         this.camera.fadeIn(500);
         this.camera.once('camerafadeincomplete', () => {
             this.fading = false;
         });
+        this.t = 0;
+
+        this.pointer = this.input.activePointer;
 
         this.LoadTileMap();
 
-        this.player = new Player(this, 16, (this.map.height - 1) * 16);
+        //Adding containers
+        for (let index = 1; index <= 4; index++) {
+            let container = this.AddItem(16 * (39 + index), 146, "container" + index);
+            container.name = "Contenidor de tipus " + index;
+            container.Interact = function () {
+                currentScene.gameManager.CheckTrash(index, currentScene.player);
+                currentScene.CheckMistakes();
+                if (currentScene.actionsDone == 4) {
+                    currentScene.NextDay();
+                }
+            }
+        }
+
+        let sink = this.AddItem(16 * 4, 11 * 16, "sink");
+        sink.name = "Llavar-se les mans";
+        sink.Interact = function () {
+            ui.ShowSink();
+        }
+        sink = this.AddItem(16 * 39, 13 + (11 * 25), "sink");
+        sink.name = "Llavar-se les mans";
+        sink.Interact = function () {
+            ui.ShowSink();
+        }
+
+        this.player = new Player(this, 16, (this.map.height - 2) * 16);
         this.camera.startFollow(this.player);
 
-        this.gameController = new GameController();
+        this.gameManager = new GameManager(this);
 
         this.input.on('pointerdown', function (pointer) {
             if (!this.pause) {
@@ -44,39 +73,70 @@ class BaseScene extends Phaser.Scene {
             }
         }, this);
 
-        for (let i = 0; i < 4; i++) {
-            this.rooms.push(new Room(this, 112 + (128 * i), 0));
+        //this.EnableLighting();
+        ui.ShowRoomManager();
+    }
+
+    Reset() {
+        this.actionsDone = 0;
+
+        this.player.x = 16;
+        this.player.y = (this.map.height - 2) * 16;
+        for (let i = 0; i < this.rooms.length; i++) {
+            this.rooms[i].Destroy();
+        }
+
+        for (var i = 6; i < 38; i++) {
+            for (var j = 0; j < 24; j++) {
+                if (this.items[i][j]) {
+                    this.items[i][j] = null;
+                    this.world[i][j] = 0;
+                }
+            }
+        }
+
+        this.gameManager.Reset();
+    }
+
+    EnableLighting() {
+        this.lights.enable();
+
+        this.lights.setAmbientColor(0x808080);
+
+        this.lights.addLight(300, 300, 100, 0xeeeeba, 1);
+
+        for (let i = 0; i < this.children.list.length; i++) {
+
+            this.children.list[i].setPipeline('Light2D');
         }
     }
 
     LoadTileMap() {
-        this.map = this.make.tilemap({ key: "hospital" });
+        this.map = this.make.tilemap({
+            key: "hospital"
+        });
         this.tiles = this.map.addTilesetImage('sprites', 'atlas_extruded', 16, 16, 1, 2);
-        this.wallLayer = this.map.createStaticLayer('Walls', this.tiles, 0, 0).setDepth(-1);
-        this.itemLayer = this.map.createStaticLayer('Items', this.tiles, 0, 0).setDepth(1);
+        this.wallLayer = this.map.createLayer('Walls', this.tiles, 0, 0).setDepth(-1);
+        this.itemLayer = this.map.createLayer('Items', this.tiles, 0, 0).setDepth(1);
 
         let columns = this.map.width;
         let rows = this.map.height;
 
-        this.world = new Array(columns);
+        this.world = new Array(columns); //Stores the tiles the character can walk through
+        this.items = new Array(columns); //Stores the item in every tile
 
         for (var i = 0; i < this.world.length; i++) {
             this.world[i] = new Array(rows);
+            this.items[i] = new Array(rows);
         }
 
         for (let i = 0; i < columns; i++) {
             for (let j = 0; j < rows; j++) {
-
                 let wTile = this.wallLayer.getTileAt(i, j);
-                let iTile = this.itemLayer.getTileAt(i, j);
 
                 this.world[i][j] = 0;
 
                 if (wTile && wTile.index != 1) {
-                    this.world[i][j] = 4;
-                }
-
-                if (iTile) {
                     this.world[i][j] = 4;
                 }
             }
@@ -85,8 +145,53 @@ class BaseScene extends Phaser.Scene {
         this.camera.setBounds(0, 0, this.map.width * 16, this.map.height * 16);
     }
 
+    AddItem(x, y, sprite) {
+        let item = this.add.sprite(x, y, sprite).setDepth(1).setOrigin(0);
+
+        x = Math.floor(x / 16);
+        y = Math.floor(y / 16);
+        let w = Math.ceil(item.width / 16);
+        let h = Math.ceil(item.height / 16);
+
+        for (let i = x; i < x + w; i++) {
+            for (let j = y; j < y + h; j++) {
+                this.world[i][j] = 4;
+                this.items[i][j] = item;
+            }
+        }
+
+        /*let hitbox = this.add.rectangle(x * 16, y * 16, w * 16, h * 16, 0xff0000).setDepth(1).setOrigin(0);
+        hitbox.alpha = 0.2;*/
+
+        return item;
+    }
+
     update(time, delta) {
+        /*this.t += delta / 10000;
+
+        let r = Math.floor(this.t * 255 + (1 - this.t) * 0);
+        let g = Math.floor(this.t * 51 + (1 - this.t) * 128);
+        let b = Math.floor(this.t * 51 + (1 - this.t) * 255);
+
+        this.camera.setBackgroundColor(`rgba(${r},${g},${b}, 1)`);
+        if (this.t >= 1) {
+            this.t = 0;
+        }*/
+
+        if (this.pause) return;
+
         this.entities.forEach(element => element.Update(time, delta));
+
+        let x = Math.floor(this.pointer.worldX / 16);
+        let y = Math.floor(this.pointer.worldY / 16);
+
+        let item = this.items[x][y];
+        if (item) {
+            ui.ShowSelectedItem(item.name)
+            //console.log(item);
+        } else {
+            ui.ShowSelectedItem(" ")
+        }
     }
 
     LoadScene(key) {
@@ -101,64 +206,27 @@ class BaseScene extends Phaser.Scene {
     }
 
     ManageInput(x, y) {
-        let iTile = this.itemLayer.getTileAt(x, y);
-        if (iTile) {
-            let closestX = x;
-            let closestY = y;
+        let closestX = x;
+        let closestY = y;
 
-            if (y > this.player.GetY()) {
-                while (this.world[closestX][closestY] != 0) {
-                    closestY--;
-                }
-            } else {
-                while (this.world[closestX][closestY] != 0) {
-                    closestY++;
-                }
-            }
-
-            if (this.player.GetX() == closestX && this.player.GetY() + 1 == closestY) {
-                let idx = iTile.index - 1;
-                switch (idx) {
-                    case 3:
-                    case 13:
-                    case 23:
-                        //Door
-                        //this.CrossDoor(y < this.player.GetY());
-                        this.CrossPatientDoor();
-                        break;
-                    case 14:
-                    case 15:
-                    case 16:
-                    case 24:
-                    case 24:
-                    case 26:
-                        this.ShowClothes();
-                        break;
-                    case 20:
-                    case 21:
-                    case 30:
-                    case 31:
-                        this.WashHands();
-                        break;
-                    case 66:
-                        this.player.ThrowTrash(idx);
-                        break;
-                    case 81:
-                    case 91:
-                    case 101:
-                        //Door
-                        this.CrossDoor();
-                        break;
-                    default:
-
-                        break;
-                }
-            } else {
-                this.player.FindWay(this.world, closestX, closestY);
-            }
-        } else {
-            this.player.FindWay(this.world, x, y);
+        while (this.world[closestX][closestY] != 0) {
+            closestY++;
         }
+
+        let item = this.items[x][y];
+        this.player.FindWay(this.world, closestX, closestY, item);
+
+        /*if (item == null) {
+            this.player.FindWay(this.world, closestX, closestY, null);
+        } else  (this.player.GetX() == closestX && this.player.GetY() + 1 == closestY) {
+            this.player.FindWay(this.world, closestX, closestY, null);
+        }*/
+
+        /*if (item != null && ) {
+            
+        } else {
+
+        }*/
     }
 
     CrossDoor() {
@@ -173,7 +241,8 @@ class BaseScene extends Phaser.Scene {
                     this.player.y -= dist;
                 } else {
                     this.player.y += dist;
-                    this.player.washedHands=false;////////SARA HA ESCRITO AQUI
+                    this.player.washedHands = false; ////////SARA HA ESCRITO AQUI
+                    this.player.washedHandsAntiseptic = false;
                 }
                 this.camera.fadeIn(500);
                 this.fading = false;
@@ -186,36 +255,39 @@ class BaseScene extends Phaser.Scene {
         return true;
     }
 
-    CrossPatientDoor() {
+    CrossPatientDoor(door) {
         let goingIn = !this.inRoom;
-
         if (!this.fading) {
             this.camera.fadeOut(500);
             this.fading = true;
             this.camera.once('camerafadeoutcomplete', () => {
                 let dist = 5 * 16;
-                if (goingIn) {
-                    this.player.y -= dist;
-                    let mistakes = this.gameController.CheckMistakes(currentRoom.patient, this.player);//////////////////////////////////////
-                    console.log(mistakes);
-                    for (let i = 0; i < mistakes.length; i++) {
-                        let m = mistakes[i];
-                        if (m["val"] > 0) {
-                            console.log("Has perdido");
-                        }
-                    }
 
+                this.player.x = door.x + 24;
+                if (goingIn) {
+                    currentRoom = door.room;
+                    this.player.y = door.y - 36;
+                    this.gameManager.CheckMistakesGoingIn(currentRoom.patient, this.player); //////////////////////////////////////
                 } else {
-                    this.player.y += dist;
-                    if (this.player.Wears(ID_MASCARILLA)) {
-                        this.player.CarryTrash();
-                        this.player.RemoveAllClothes();
+                    this.player.y = door.y + 56;
+                    this.player.RemoveAllClothes();
+                    this.player.washedHands = false; ////////////SARA HA ESCRITO AQUI
+                    this.player.washedHandsAntiseptic = false;
+
+                    if (this.player.carriesTrash && !this.player.firstBag) {
+                        this.gameManager.AddMistake({
+                            "mistake": "No has usado la primera bolsa",
+                            "val": 1
+                        });
                     }
-                    this.player.washedHands=false;////////////SARA HA ESCRITO AQUI
+                    currentRoom = null;
                 }
+
                 this.camera.fadeIn(500);
                 this.fading = false;
                 this.inRoom = goingIn;
+
+                this.CheckMistakes();
             });
         } else {
             console.log("Nope");
@@ -224,65 +296,52 @@ class BaseScene extends Phaser.Scene {
         return true;
     }
 
-    WashHands() {
-        console.log("Washing hands");
-        this.player.washedHands=true;////////////SARA HA ESCRITO AQUI
+    BlockTiles(x, y, w, h) {
+        x = Math.floor(x / 16);
+        y = Math.floor(y / 16);
+        w = Math.floor(w / 16);
+        h = Math.floor(h / 16);
+        for (let i = x; i < x + w; i++) {
+            for (let j = y; j < y + h; j++) {
+                this.world[i][j] = 4;
+            }
+        }
     }
 
-    ShowClothes() {
+    EndGame() {
         this.pause = true;
-
-        this.background = this.add.rectangle(240, 135, 350, 180, 0xff6699).setDepth(10).setScrollFactor(0).setOrigin(0.5);
-
-        this.cerrar = this.add.sprite(400, 62, 'cerrar').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            currentScene.HideClothes();
-        });
-
-        let guantes = this.add.sprite(100, 100, 'Guantes').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_GUANTES))
-                guantes.destroy();
-        });
-        this.clothes.push(guantes);
-
-        let gorro = this.add.sprite(140, 100, 'Gorro').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_GORRO))
-                gorro.destroy();
-        });
-        this.clothes.push(gorro);
-
-        let mascarilla = this.add.sprite(200, 100, 'Mascarilla').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_MASCARILLA))
-                mascarilla.destroy();
-        });
-        this.clothes.push(mascarilla);
-
-        let gafas = this.add.sprite(300, 100, 'Gafas').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_GAFAS))
-                gafas.destroy();
-        });
-        this.clothes.push(gafas);
-
-        let calzas = this.add.sprite(140, 200, 'Calzas').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_CALZAS))
-                calzas.destroy();
-        });
-        this.clothes.push(calzas);
-
-        let bata = this.add.sprite(300, 200, 'Bata').setDepth(11).setScrollFactor(0).setScale(8).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_BATA))
-                bata.destroy();
-        });
-        this.clothes.push(bata);
+        if (this.fading) {
+            this.camera.once('camerafadeincomplete', () => {
+                this.ShowEnd();
+                this.fading = false;
+            });
+        } else {
+            ui.ShowEnd(this.gameManager.mistakes);
+        }
     }
 
-    HideClothes() {
 
-        this.pause = false;
-        for (let i = 0; i < this.clothes.length; i++) {
-            this.clothes[i].destroy();
+
+    NextDay() {
+        this.Reset();
+    }
+
+    CheckMistakes() {
+        let fail = false;
+
+        for (let i = 0; i < this.gameManager.mistakes.length; i++) {
+            let m = this.gameManager.mistakes[i];
+            if (m["val"] > 0) {
+                fail = true;
+            }
+            console.log(m["mistake"]);
         }
 
-        this.background.destroy();
-        this.cerrar.destroy();
+        if (fail) {
+            //this.gameManager.mistakes = [];
+            //this.EndGame();
+        }
     }
+
+
 }
