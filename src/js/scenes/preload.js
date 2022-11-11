@@ -64,7 +64,7 @@ class Preload extends Phaser.Scene {
 
         //Musica
         this.load.audio("music", ["resources/music/hospital.mp3"]); // Musica fondo
-        this.load.audio("clickSound", ["resources/sfx/click.ogg"]);
+        this.load.audio("clickSound", ["resources/sfx/click.mp3"]);
 
 
         let progressBar = this.add.graphics();

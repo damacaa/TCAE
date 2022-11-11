@@ -7,7 +7,10 @@ class BaseScene extends Phaser.Scene {
     }
 
     create() {
+        console.log("Click sound converted to mp3");
+
         ui.EnableGameUI();
+        
         currentScene = this;
         this.entities = [];
 
