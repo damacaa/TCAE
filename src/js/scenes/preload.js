@@ -42,6 +42,7 @@ class Preload extends Phaser.Scene {
         this.load.image('table', 'resources/items/Table.png');
         this.load.image('tableB', 'resources/items/TableBig.png');
         this.load.image('trash', 'resources/items/Trash.png');
+        this.load.image('trashBag', 'resources/items/TrashBag.png');
         this.load.image('paper', 'resources/items/Paper.png');
         this.load.image('sink', 'resources/items/Sink.png');
         this.load.image('sinkB', 'resources/items/SinkBig.png');
@@ -53,6 +54,7 @@ class Preload extends Phaser.Scene {
         this.load.image('container3', 'resources/items/Container3.png');
         this.load.image('container4', 'resources/items/Container4.png');
 
+        this.load.image('wall', 'resources/level/Wall.png');
         this.load.image('atlas_extruded', 'resources/level/Tile_sheet_extruded.png');
         this.load.tilemapTiledJSON('hospital', 'resources/level/hospital.json');
 
@@ -61,7 +63,8 @@ class Preload extends Phaser.Scene {
         this.load.image('close', 'resources/ui/Cerrar.png');
 
         //Musica
-        //this.load.audio("music", "resources/audio/music.ogg"); // Musica fondo
+        this.load.audio("music", ["resources/music/hospital.mp3"]); // Musica fondo
+        this.load.audio("clickSound", ["resources/sfx/click.ogg"]);
 
 
         let progressBar = this.add.graphics();
@@ -74,6 +77,8 @@ class Preload extends Phaser.Scene {
             progressBar.fillStyle(0xffffff, 1);
             progressBar.fillRect(250, 280, 300 * value, 30);
         });
+
+        this.load.plugin('rexoutlinepipelineplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexoutlinepipelineplugin.min.js', true);
     }
 
     create() {

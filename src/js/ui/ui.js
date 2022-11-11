@@ -1,6 +1,8 @@
 let ui;
 let textColor = '#ffffff';
-let backgroundColor = 0x5599ff;
+let darkTextColor = '#222244';
+let backgroundColor = 0x4abedf;
+let white = 0xfffff0;
 
 class UI extends BaseMenuScene {
     constructor() {
@@ -24,27 +26,31 @@ class UI extends BaseMenuScene {
             align: 'center'
         }).setDepth(12).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4).setResolution(3);
 
-        /*this.fullscreen = this.add.sprite(10, 244, 'fullscreen').setOrigin(0).setDepth(9).setInteractive().setVisible(true);
-        this.fullscreen.on('pointerdown', function (event) {
-            if (this.scale.isFullscreen) {
-                this.scale.stopFullscreen();
-            }
-            else {
-                this.scale.startFullscreen();
-            }
-        }, this);
+        this.mistakesText = this.PrintText("", 16, 5, 5);
+        this.mistakesText.setOrigin(0, 0);
 
-        if (this.mobile) {
-        }*/
+        this.dayCount = this.PrintText("", 16, 475, 0);
+        this.dayCount.setOrigin(1, 0);
+
+        this.trashIcon = this.add.sprite(5, 265, 'trashBag').setDepth(15).setScrollFactor(0);
+        this.trashIcon.setOrigin(0, 1);
+        this.trashIcon.setSize(4);
+        this.trashIcon.visible = false;
+
+        this.music = this.sound.add('music', {
+            loop: true
+        });
+        this.music.play();
+        this.showingMessage = false;
     }
 
     update() {
-        if (this.mobile) {
+        /*if (currentScene.gameManager)
+            this.mistakesText.text = currentScene.gameManager.GetMistakesString();*/
+    }
 
-        }
-        if (this.text.active) {
-
-        }
+    UpdateDay(day) {
+        this.dayCount.text = "Día: " + day;
     }
 
     EnableGameUI() {}
@@ -52,6 +58,15 @@ class UI extends BaseMenuScene {
     HideGameUI() {}
 
     EnableMenuUI() {}
+
+    EnableTrashIcon() {
+        this.trashIcon.visible = true;
+    }
+
+    DisableTrashIcon() {
+        this.trashIcon.visible = false;
+    }
+
 
     ShowSelectedItem(name) {
         this.text.text = name;
@@ -64,18 +79,17 @@ class UI extends BaseMenuScene {
 
         currentScene.pause = true;
 
-        this.background = this.add.rectangle(240, 135, 350, 180, backgroundColor).setDepth(10).setScrollFactor(0).setOrigin(0.5);
+        this.background = this.add.rectangle(240, 125, 155, 220, white).setDepth(10).setScrollFactor(0).setOrigin(0.5);
 
-        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+        this.close = this.add.sprite(330, 23, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
             ui.HidePatientInfo();
         });
 
-        this.illness = this.add.text(300, 160, patient.illness, {
-            fontFamily: 'BetterPixelsAcce',
-            fontSize: '32px',
-            color: textColor,
-            align: 'center'
-        }).setDepth(10).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4);
+        this.header = this.PrintText("Informe: ", 16, 175, 30, darkTextColor);
+        this.header.setOrigin(0, 0);
+
+        this.illness = this.PrintText(patient.illness, 16, 175, 50, darkTextColor);
+        this.illness.setOrigin(0, 0);
     }
 
     HidePatientInfo() {
@@ -83,28 +97,24 @@ class UI extends BaseMenuScene {
         this.background.destroy();
         this.close.destroy();
         this.illness.destroy();
+        this.header.destroy();
     }
 
     ShowEnd(mistakes) {
         this.text.text = " ";
         this.background = this.add.rectangle(240, 135, 400, 220, backgroundColor).setDepth(10).setScrollFactor(0).setOrigin(0.5);
-        this.close = this.add.sprite(400, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+        this.close = this.add.sprite(420, 46, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
             currentScene.LoadScene("mainMenu");
         });
 
-        for (let i = 0; i < mistakes.length; i++) {
-            let m = mistakes[i];
-            /*if (m["val"] > 0) {
-                fail = true;
-            }*/
 
-            this.add.text(70, 30 + (20 * i), m["mistake"], {
-                fontFamily: 'BetterPixelsAcce',
-                fontSize: '16px',
-                color: textColor,
-                align: 'center'
-            }).setDepth(15).setOrigin(0, 0).setScrollFactor(0).setResolution(3);
-        }
+        this.add.text(70, 40, "ERRORS:\n" + currentScene.gameManager.GetMistakesString(), {
+            fontFamily: 'BetterPixelsAcce',
+            fontSize: '16px',
+            color: textColor,
+            align: 'Left'
+        }).setDepth(15).setOrigin(0, 0).setScrollFactor(0).setResolution(3);
+
     }
 
     ShowClothes() {
@@ -219,7 +229,7 @@ class UI extends BaseMenuScene {
         this.soap2.on('pointerout', function (pointer) {
             ui.ShowSelectedItem(" ");
         })
-        
+
 
         this.close = this.add.sprite(418, 62, 'close').setDepth(12).setScrollFactor(0).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
             ui.HideSink();
@@ -258,8 +268,7 @@ class UI extends BaseMenuScene {
 
         a.setInteractive().on('pointerdown', function (event) {
             currentScene.player.CarryTrash(currentRoom.patient.illnessType);
-            currentScene.actionsDone++;
-            currentRoom.patient.takenCareOf = true;
+            ui.EnableTrashIcon();
             ui.HideActions();
         }, this);
 
@@ -336,7 +345,7 @@ class UI extends BaseMenuScene {
             pressureButton.id = i;
             pressureButton.pressure = NO_PRESSURE;
 
-            let roomTypeButton = this.add.text(220 + x, y + 20, "Habitació: SENSE ANTESALA", {
+            let roomTypeButton = this.add.text(220 + x, y + 20, "Habitació: SENSE AVANTSALA", {
                 fontFamily: 'BetterPixelsAcce',
                 fontSize: '16px',
                 color: textColor,
@@ -344,9 +353,9 @@ class UI extends BaseMenuScene {
             }).setDepth(10).setOrigin(0, 0.5).setScrollFactor(0).setLineSpacing(4).setResolution(3).setInteractive().on('pointerdown', function () {
                 this.roomType = !this.roomType;
                 if (this.roomType) {
-                    this.text = "Habitació: AMB ANTESALA";
+                    this.text = "Habitació: AMB AVANTSALA";
                 } else {
-                    this.text = "Habitació: SENSE ANTESALA";
+                    this.text = "Habitació: SENSE AVANTSALA";
                 }
 
                 ui.roomTypes[this.id] = this.roomType;
@@ -372,6 +381,49 @@ class UI extends BaseMenuScene {
 
         currentScene.gameManager.CheckRoomMistakes(this.pressures, this.roomTypes);
         currentScene.CheckMistakes();
+    }
+
+    PrintText(text, size = 16, x = 0, y = 0, color = textColor) {
+        let t = this.add.text(x, y, text, {
+            fontFamily: 'BetterPixelsAcce',
+            fontSize: size + 'px',
+            color: color,
+            align: 'left'
+        }).setDepth(15).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4).setResolution(3);
+
+        return t;
+    }
+
+    ShowMessage(message) {
+        let m = this.PrintText(message, 16, 240, 135);
+        m.alpha = 0;
+        this.showingMessage = true;
+
+        let tween = this.tweens.add({
+            targets: [m],
+            //alpha: 0,
+            // alpha: '+=1',
+            alpha: {
+                from: 0,
+                to: 1
+            },
+            // alpha: { start: 0, to: 1 },  
+            // alpha: { start: value0, from: value1, to: value2 },  
+            // alpha: function(target, key, value, targetIndex, totalTargets, tween)  { return newValue; },
+            // alpha: {
+            //      getActive: function (target, key, value, targetIndex, totalTargets, tween) { return newValue; },
+            //      getStart: function (target, key, value, targetIndex, totalTargets, tween) { return newValue; },
+            //      getEnd: function (target, key, value, targetIndex, totalTargets, tween) { return newValue; }
+            // },
+            ease: 'Cubic', // 'Cubic', 'Elastic', 'Bounce', 'Back'
+            duration: 2000,
+            repeat: 0, // -1: infinity
+            yoyo: true,
+            onComplete() {
+                ui.showingMessage = false;
+            }
+        });
+
     }
 }
 
