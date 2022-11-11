@@ -1,5 +1,6 @@
 const MAX_PATIENTS = 4;
 class GameManager {
+    
     constructor(scene) {
         this.scene = scene;
         this.Reset();

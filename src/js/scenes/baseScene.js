@@ -8,6 +8,7 @@ class BaseScene extends Phaser.Scene {
 
     create() {
         ui.EnableGameUI();
+        
         currentScene = this;
         this.entities = [];
 
