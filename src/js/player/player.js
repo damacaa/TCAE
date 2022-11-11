@@ -16,7 +16,7 @@ class Player extends Phaser.GameObjects.Sprite {
     this.setDepth(9);
 
     this.foundRoute = false;
-    this.showWay = true;
+    this.showWay = false;
     this.item = null;
 
     this.garments = [];
@@ -311,7 +311,7 @@ class Player extends Phaser.GameObjects.Sprite {
         this.trashId = 1;
         break;
     }
-
+    ui.EnableTrashIcon();
     this.play("idle", true);
   }
 

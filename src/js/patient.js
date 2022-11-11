@@ -1,8 +1,15 @@
-let malaltiesEsctrictes = ["Carboncle pulmonar", "Diftèria", "Staphylococcus aureus", "Estreptococos de tipus A", "Pèmfig del neunat", "Pesta", "Cremada extensa infectada", "Ràbia", "Varicel·la", "Herpes zòster disseminat", "Malatia pel virus de Marburg", "Ebola"]
+/*let malaltiesEsctrictes = ["Carboncle pulmonar", "Diftèria", "Staphylococcus aureus", "Estreptococos de tipus A", "Pèmfig del neunat", "Pesta", "Cremada extensa infectada", "Ràbia", "Varicel·la", "Herpes zòster disseminat", "Malatia pel virus de Marburg", "Ebola"]
 let malaltiesProtectores = ["Agranulocitosi", "Dermatitis extensa no infectada", "Paciente immunodreprimit", "Trasplant", "Limfoma", "Leucèmia", "Cremada extensa", "Prematur"];
 let malaltiesRespiratories = ["Tuberculosi pulmonar", "Pneumònia", "Tos ferina", "Xarampió", "Rubèola", "Parotiditis", "Infecció meningocòccica"];
 let malaltiesEnteriques = ["Gastroenteritis per Escherichia coli", "Enterocolitis", "Còlera", "Febre tifoide", "Meningitis", "Salmonel·losi", "Poliomielitis", "Disenteries", "Hepatitis A", "Hepatitis B", "Hepatitis no A", "Hepatitis delta"];
-let malaltiesCutaneomucoses = ["Cremada limitada", "Gangrena gasosa", "Ferides molt infectades", "Abscessos", "Candidiasi cutània", "Sarna", "Impetigen"]
+let malaltiesCutaneomucoses = ["Cremada limitada", "Gangrena gasosa", "Ferides molt infectades", "Abscessos", "Candidiasi cutània", "Sarna", "Impetigen"]*/
+
+
+let malaltiesEsctrictes = ["Diftèria laríngia", "Pesta neumònica", "Varicel·la", "Ràbia", "Rubèola congènita", "Febres hemorràgiques"];
+let malaltiesProtectores = ["Innmunodeprimit", "Aplàsia medul·lar", "Tractaments citostàtics", "Trasplantats", "Grans cremats"];
+let malaltiesRespiratories = ["TBC", "Pallola", "Rubèola", "Meningitis", "Parotiditis", "Tos ferina", "Sèpsia menigocócica"];
+let malaltiesEnteriques = ["Còlera", "Gastroenteritis", "Hepatitis A", "Febre tifoidal"];
+let malaltiesCutaneomucoses = ["Cremades infectades", "Gangrena", "Impetigen", "Herpes zòster", "Ferides externes infectades"]
 let illnessTypes = ["Estricte", "Protector", "Respiratori", "Entèric", "Cutaneomucós"];
 
 

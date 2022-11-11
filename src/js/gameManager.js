@@ -3,11 +3,13 @@ class GameManager {
     constructor(scene) {
         this.scene = scene;
         this.Reset();
+        this.scene.entities.push(this);
     }
 
     Reset() {
         this.patients = [];
         this.mistakes = [];
+        this.mistakesToShow = [];
         this.treatedPatients = [];
         this.washedHands = false;
         this.washedHandsAntiseptic = false;
@@ -17,7 +19,14 @@ class GameManager {
         }
 
         for (let i = 0; i < MAX_PATIENTS; i++) {
-            this.scene.rooms.push(new Room(this.scene, 112 + (128 * i), 0, this.patients[i]));
+            this.scene.rooms.push(new Room(this.scene, 112 + (128 * i), 0, this.patients[i], i));
+        }
+    }
+
+    Update(time,delta){
+        if(this.mistakesToShow.length > 0 && !ui.showingMessage ){
+            ui.ShowMessage(this.mistakesToShow[0]);
+            this.mistakesToShow.shift();
         }
     }
 
@@ -31,7 +40,7 @@ class GameManager {
                 checks = [true, true, false, true, true, true, false]
                 break;
             case 1:
-                checks = [true, true, true, true, true, true, true]
+                checks = [true, true, false, true, true, true, true] //Ulleres might be true
                 break;
             case 2:
                 checks = [false, false, false, true, false, true, false]
@@ -49,12 +58,12 @@ class GameManager {
 
         for (let index = 0; index <= 5; index++) {
             if (!player.Wears(index) && checks[index]) {
-                this.mistakes.push({
+                this.AddMistake({
                     "mistake": "No portaves " + garments[index],
                     "val": 1
                 });
             } else if (player.Wears(index) && !checks[index]) {
-                this.mistakes.push({
+                this.AddMistake({
                     "mistake": "No necessitaves " + garments[index],
                     "val": 0
                 });
@@ -62,19 +71,19 @@ class GameManager {
         }
 
         if (!this.washedHands) {
-            this.mistakes.push({
+            this.AddMistake({
                 "mistake": "No t'has llavat les mans!",
                 "val": 1
             });
         }
 
         if (!this.washedHandsAntiseptic && checks[6]) {
-            this.mistakes.push({
+            this.AddMistake({
                 "mistake": "No has utilitzat el sabó antisèptic",
                 "val": 1
             });
         } else if (this.washedHandsAntiseptic && !checks[6]) {
-            this.mistakes.push({
+            this.AddMistake({
                 "mistake": "No necessitaves el sabó antisèptic",
                 "val": 0
             });
@@ -84,8 +93,8 @@ class GameManager {
         if (patient.illnessType != 0 && patient.illnessType != 4) {
             for (let i = 0; i < this.treatedPatients.length; i++) {
                 if (patient.illnessType == 0 && patient.illnessType == 4) {
-                    this.mistakes.push({
-                        "mistake": "No has seguit l'ordre correcte",
+                    this.AddMistake({
+                        "mistake": "No has seguit l'ordre correcte per a atendre als pacients",
                         "val": 1
                     });
                 }
@@ -98,9 +107,9 @@ class GameManager {
     CheckMistakesGoingOut(patient, player) {
 
         if (player.carriesTrash && !player.firstBag) {
-            this.mistakes.push({
+            this.AddMistake({
                 "mistake": "No has usado la primera bolsa",
-                "val": 1
+                "val": 0
             });
         }
 
@@ -113,16 +122,16 @@ class GameManager {
         }
 
         if (index != player.trashId) {
-            this.mistakes.push({
+            this.AddMistake({
                 "mistake": "Contenidor incorrecte",
                 "val": 1
             });
         }
 
         if (!player.secondBag) {
-            this.mistakes.push({
+            this.AddMistake({
                 "mistake": "No has usat la segona bossa",
-                "val": 1
+                "val": 0
             });
         }
 
@@ -132,30 +141,24 @@ class GameManager {
     CheckRoomMistakes(pressures, roomTypes) {
         for (let i = 0; i < this.scene.rooms.length; i++) {
             if (pressures[i] != this.scene.rooms[i].pressure) {
-                this.mistakes.push({
-                    "mistake": "La pressió de l'habitació " + i + 1 + " no és correcta",
-                    "val": 1
+                this.AddMistake({
+                    "mistake": "La pressió de l'habitació " + (i + 1) + " no és correcta",
+                    "val": 0
                 });
             }
 
             if (roomTypes[i] != this.scene.rooms[i].hasAnteroom) {
-                this.mistakes.push({
-                    "mistake": "No has triat l'habitació correcta per al pacient " + i + 1,
-                    "val": 1
+                this.AddMistake({
+                    "mistake": "No has triat l'habitació correcta per al pacient " + (i + 1),
+                    "val": 0
                 });
             }
         }
     }
 
-    AddMistake(m) {
-        this.mistakes.push(m);
-    }
-
     WashHands(antiseptic, wearsAnyClothes) {
-
-
         if (wearsAnyClothes) {
-            this.mistakes.push({
+            this.AddMistake({
                 "mistake": "T'has llavat les mans després d'haver-te vestit",
                 "val": 0
             });
@@ -168,5 +171,21 @@ class GameManager {
         } else {
             console.log("Washing hands");
         }
+    }
+
+    GetMistakesString() {
+        let s = "";
+        for (let i = 0; i < this.mistakes.length; i++) {
+            s += this.mistakes[i]["mistake"] + "\n";
+        }
+        return s;
+    }
+
+    AddMistake(mistake) {
+        if(mistake["val"] == 0){
+            this.mistakesToShow.push(mistake["mistake"]);
+        }else{
+        }
+        this.mistakes.push(mistake);
     }
 }

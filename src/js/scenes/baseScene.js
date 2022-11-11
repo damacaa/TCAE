@@ -12,13 +12,13 @@ class BaseScene extends Phaser.Scene {
         this.entities = [];
 
         this.pause = false;
-        this.inRoom = false;
-        this.inCorridor = true;
         this.clothes = [];
         this.rooms = [];
 
         this.fail = false;
         this.actionsDone = 0;
+        this.days = 1;
+        ui.UpdateDay(this.days);
 
         this.camera = this.cameras.main;
         this.camera.setOrigin(0.5, 0.5);
@@ -41,6 +41,7 @@ class BaseScene extends Phaser.Scene {
             container.name = "Contenidor de tipus " + index;
             container.Interact = function () {
                 currentScene.gameManager.CheckTrash(index, currentScene.player);
+                ui.DisableTrashIcon();
                 currentScene.CheckMistakes();
                 if (currentScene.actionsDone == 4) {
                     currentScene.NextDay();
@@ -75,6 +76,12 @@ class BaseScene extends Phaser.Scene {
 
         //this.EnableLighting();
         ui.ShowRoomManager();
+
+
+        this.clickSound = this.sound.add('clickSound', {
+            loop: false
+        });
+        //this.postFxPlugin = this.plugins.get('rexoutlinepipelineplugin');
     }
 
     Reset() {
@@ -94,6 +101,8 @@ class BaseScene extends Phaser.Scene {
                 }
             }
         }
+
+        this.rooms = [];
 
         this.gameManager.Reset();
     }
@@ -145,7 +154,7 @@ class BaseScene extends Phaser.Scene {
         this.camera.setBounds(0, 0, this.map.width * 16, this.map.height * 16);
     }
 
-    AddItem(x, y, sprite) {
+    AddItem(x, y, sprite, isItem = true) {
         let item = this.add.sprite(x, y, sprite).setDepth(1).setOrigin(0);
 
         x = Math.floor(x / 16);
@@ -156,7 +165,8 @@ class BaseScene extends Phaser.Scene {
         for (let i = x; i < x + w; i++) {
             for (let j = y; j < y + h; j++) {
                 this.world[i][j] = 4;
-                this.items[i][j] = item;
+                if (isItem)
+                    this.items[i][j] = item;
             }
         }
 
@@ -214,6 +224,9 @@ class BaseScene extends Phaser.Scene {
         }
 
         let item = this.items[x][y];
+        if (item != null)
+            this.clickSound.play();
+
         this.player.FindWay(this.world, closestX, closestY, item);
 
         /*if (item == null) {
@@ -229,34 +242,7 @@ class BaseScene extends Phaser.Scene {
         }*/
     }
 
-    CrossDoor() {
-        let goingIn = this.inCorridor;
-
-        if (!this.fading) {
-            this.camera.fadeOut(500);
-            this.fading = true;
-            this.camera.once('camerafadeoutcomplete', () => {
-                let dist = 5 * 16;
-                if (goingIn) {
-                    this.player.y -= dist;
-                } else {
-                    this.player.y += dist;
-                    this.player.washedHands = false; ////////SARA HA ESCRITO AQUI
-                    this.player.washedHandsAntiseptic = false;
-                }
-                this.camera.fadeIn(500);
-                this.fading = false;
-                this.inCorridor = !goingIn;
-            });
-        } else {
-            console.log("Nope");
-        }
-
-        return true;
-    }
-
     CrossPatientDoor(door) {
-        let goingIn = !this.inRoom;
         if (!this.fading) {
             this.camera.fadeOut(500);
             this.fading = true;
@@ -264,14 +250,16 @@ class BaseScene extends Phaser.Scene {
                 let dist = 5 * 16;
 
                 this.player.x = door.x + 24;
-                if (goingIn) {
+                if (door.goingIn) {
                     currentRoom = door.room;
                     this.player.y = door.y - 36;
-                    this.gameManager.CheckMistakesGoingIn(currentRoom.patient, this.player); //////////////////////////////////////
+                    if (door.checkDoor) {
+                        this.gameManager.CheckMistakesGoingIn(currentRoom.patient, this.player);
+                    }
                 } else {
                     this.player.y = door.y + 56;
                     this.player.RemoveAllClothes();
-                    this.player.washedHands = false; ////////////SARA HA ESCRITO AQUI
+                    this.player.washedHands = false;
                     this.player.washedHandsAntiseptic = false;
 
                     if (this.player.carriesTrash && !this.player.firstBag) {
@@ -282,12 +270,14 @@ class BaseScene extends Phaser.Scene {
                     }
                     currentRoom = null;
                 }
+                door.goingIn = !door.goingIn;
 
                 this.camera.fadeIn(500);
                 this.fading = false;
-                this.inRoom = goingIn;
 
-                this.CheckMistakes();
+                if (door.checkDoor) {
+                    this.CheckMistakes();
+                }
             });
         } else {
             console.log("Nope");
@@ -318,12 +308,17 @@ class BaseScene extends Phaser.Scene {
         } else {
             ui.ShowEnd(this.gameManager.mistakes);
         }
+        this.days = 1;
+        ui.UpdateDay(this.days);
     }
 
-
-
     NextDay() {
+        this.days += 1;
+        console.log("Day: " + this.days);
+        ui.UpdateDay(this.days);
         this.Reset();
+        ui.ShowRoomManager();
+        ui.ShowSelectedItem("");
     }
 
     CheckMistakes() {
@@ -334,14 +329,12 @@ class BaseScene extends Phaser.Scene {
             if (m["val"] > 0) {
                 fail = true;
             }
-            console.log(m["mistake"]);
+            //console.log(m["mistake"]);
         }
 
-        if (fail) {
-            //this.gameManager.mistakes = [];
-            //this.EndGame();
+        if (fail || this.gameManager.mistakes.length > 10) {
+            //console.log("Bye bye");
+            this.EndGame();
         }
     }
-
-
 }
