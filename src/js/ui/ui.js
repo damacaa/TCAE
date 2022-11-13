@@ -2,6 +2,7 @@ let ui;
 let textColor = '#ffffff';
 let darkTextColor = '#222244';
 let backgroundColor = 0x4abedf;
+let darkBackgroundColor = 0x556181;
 let white = 0xfffff0;
 
 class UI extends BaseMenuScene {
@@ -53,11 +54,11 @@ class UI extends BaseMenuScene {
         this.dayCount.text = "Día: " + day;
     }
 
-    EnableGameUI() {}
+    EnableGameUI() { }
 
-    HideGameUI() {}
+    HideGameUI() { }
 
-    EnableMenuUI() {}
+    EnableMenuUI() { }
 
     EnableTrashIcon() {
         this.trashIcon.visible = true;
@@ -117,6 +118,51 @@ class UI extends BaseMenuScene {
 
     }
 
+
+    AddRemoveButton(id, name) {
+        let x = 10;
+        let y = 10 + (30 * (id + 1));
+
+        let button = this.add.rectangle(x, y, 80, 20, darkBackgroundColor).setOrigin(0, 0).setDepth(11).setScrollFactor(0).setScale(1).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            currentScene.player.Remove(id);
+            ui.clothes[id].visible = true;
+            this.text.destroy();
+            this.close.destroy();
+            this.destroy();
+        }).on('pointerover', function (pointer) {
+            button.color = darkBackgroundColor;
+        }).on('pointerout', function (pointer) {
+            button.color = backgroundColor;
+        });
+
+        button.text = ui.add.text(x + 4, y, name, {
+            fontFamily: 'BetterPixelsAcce',
+            fontSize: '16px',
+            color: textColor,
+            align: 'Left'
+        }).setDepth(15).setOrigin(0, 0).setScrollFactor(0).setResolution(3);
+
+        button.close = ui.add.text(x + 76, y, "X", {
+            fontFamily: 'BetterPixelsAcce',
+            fontSize: '16px',
+            color: textColor,
+            align: 'Left'
+        }).setDepth(15).setOrigin(1, 0).setScrollFactor(0).setResolution(3);
+
+        this.removeButtons[id] = button;
+    }
+
+    AddPieceToTable(x, y, key, id, name) {
+        let p = this.add.sprite(x, y, key).setDepth(11).setScrollFactor(0).setScale(2).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
+            if (currentScene.player.PutOn(id)) {
+                ui.AddRemoveButton(id, name);
+                p.visible = false;
+            }
+        });
+        p.name = name
+        this.clothes[id] = p;
+    }
+
     ShowClothes() {
         if (currentScene.pause) {
             return;
@@ -129,51 +175,18 @@ class UI extends BaseMenuScene {
             ui.HideClothes();
         });
 
-        this.clothes = [];
 
         this.background = this.add.sprite(240, 135, 'tableB').setDepth(10).setOrigin(0.5, 0.5).setScrollFactor(0).setScale(2);
 
-        let guantes = this.add.sprite(110, 100, 'GuantesB').setDepth(11).setScrollFactor(0).setScale(2).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_GUANTES))
-                guantes.destroy();
-        });
-        guantes.name = "Guants"
-        this.clothes.push(guantes);
+        this.clothes = Array(6);
+        this.removeButtons = Array(6);
 
-        let gorro = this.add.sprite(200, 100, 'GorroB').setDepth(11).setScrollFactor(0).setScale(2).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_GORRO))
-                gorro.destroy();
-        });
-        gorro.name = "Barret";
-        this.clothes.push(gorro);
-
-        let mascarilla = this.add.sprite(280, 100, 'MascarillaB').setDepth(11).setScrollFactor(0).setScale(2).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_MASCARILLA))
-                mascarilla.destroy();
-        });
-        mascarilla.name = "Mascareta"
-        this.clothes.push(mascarilla);
-
-        let gafas = this.add.sprite(360, 100, 'GafasB').setDepth(11).setScrollFactor(0).setScale(2).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_GAFAS))
-                gafas.destroy();
-        });
-        gafas.name = "Ulleres"
-        this.clothes.push(gafas);
-
-        let calzas = this.add.sprite(165, 192, 'CalzasB').setDepth(11).setScrollFactor(0).setScale(2).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_CALZAS))
-                calzas.destroy();
-        });
-        calzas.name = "Calçes"
-        this.clothes.push(calzas);
-
-        let bata = this.add.sprite(330, 190, 'BataB').setDepth(11).setScrollFactor(0).setScale(2).setInteractive().on('pointerdown', function (pointer, localX, localY, event) {
-            if (currentScene.player.PutOn(ID_BATA))
-                bata.destroy();
-        });
-        bata.name = "Bata";
-        this.clothes.push(bata);
+        this.AddPieceToTable(110, 100, 'GuantesB', ID_GUANTES, 'Guants');
+        this.AddPieceToTable(200, 100, 'GorroB', ID_GORRO, 'Barret');
+        this.AddPieceToTable(280, 100, 'MascarillaB', ID_MASCARILLA, 'Mascareta');
+        this.AddPieceToTable(360, 100, 'GafasB', ID_GAFAS, 'Ulleres');
+        this.AddPieceToTable(165, 192, 'CalzasB', ID_CALZAS, 'Calçes');
+        this.AddPieceToTable(330, 190, 'BataB', ID_BATA, 'Bata');
 
         for (let index = 0; index < this.clothes.length; index++) {
             this.clothes[index].on('pointerover', function (pointer) {
@@ -190,6 +203,13 @@ class UI extends BaseMenuScene {
         currentScene.pause = false;
         for (let i = 0; i < this.clothes.length; i++) {
             this.clothes[i].destroy();
+        }
+        for (let i = 0; i < this.removeButtons.length; i++) {
+            if (this.removeButtons[i]) {
+                this.removeButtons[i].text.destroy();
+                this.removeButtons[i].close.destroy();
+                this.removeButtons[i].destroy();
+            }
         }
         this.background.destroy();
         this.close.destroy();
