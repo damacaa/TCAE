@@ -278,6 +278,10 @@ class Player extends Phaser.GameObjects.Sprite {
     return succes;
   }
 
+  Remove(idx) {
+    this.garments[idx].visible = false;
+  }
+
   Wears(idx) {
     if (idx > this.garments.length)
       return false;
