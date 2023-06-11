@@ -7,7 +7,9 @@ const ID_GUANTES = 5;
 
 class Player extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y) {
-    super(scene, x, y, 'player');
+    let key = 'playerf';
+
+    super(scene, x, y, key);
     this.scene = scene;
     this.scene.add.existing(this);
     this.scene.entities.push(this);
@@ -19,6 +21,8 @@ class Player extends Phaser.GameObjects.Sprite {
     this.showWay = false;
     this.item = null;
 
+
+
     this.garments = [];
     for (let i = 0; i <= 5; i++) {
       let g = new Garment(scene, x, y, i, this);
@@ -28,28 +32,28 @@ class Player extends Phaser.GameObjects.Sprite {
 
     this.scene.anims.create({
       key: 'walk',
-      frames: this.scene.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+      frames: this.scene.anims.generateFrameNumbers(key, { start: 0, end: 3 }),
       frameRate: 4,
       repeat: -1
     });
 
     this.scene.anims.create({
       key: 'idle',
-      frames: this.scene.anims.generateFrameNumbers('player', { start: 1, end: 1 }),
+      frames: this.scene.anims.generateFrameNumbers(key, { start: 1, end: 1 }),
       frameRate: 4,
       repeat: -1
     });
 
     this.scene.anims.create({
       key: 'walkTrash',
-      frames: this.scene.anims.generateFrameNumbers('player', { start: 28, end: 31 }),
+      frames: this.scene.anims.generateFrameNumbers(key, { start: 28, end: 31 }),
       frameRate: 4,
       repeat: -1
     });
 
     this.scene.anims.create({
       key: 'idleTrash',
-      frames: this.scene.anims.generateFrameNumbers('player', { start: 29, end: 29 }),
+      frames: this.scene.anims.generateFrameNumbers(key, { start: 29, end: 29 }),
       frameRate: 4,
       repeat: -1
     });

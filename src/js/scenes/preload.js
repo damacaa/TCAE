@@ -15,6 +15,13 @@ class Preload extends Phaser.Scene {
         }
         );
 
+        this.load.spritesheet('playerf',
+            'resources/player/player_f.png', {
+            frameWidth: 32,
+            frameHeight: 32
+        }
+        );
+
         this.load.spritesheet('pacientes',
             'resources/npc/pacientes.png', {
             frameWidth: 12,
