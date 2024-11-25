@@ -5,11 +5,11 @@ let malaltiesEnteriques = ["Gastroenteritis per Escherichia coli", "Enterocoliti
 let malaltiesCutaneomucoses = ["Cremada limitada", "Gangrena gasosa", "Ferides molt infectades", "Abscessos", "Candidiasi cutània", "Sarna", "Impetigen"]*/
 
 
-let malaltiesEsctrictes = ["Diftèria laríngia", "Pesta neumònica", "Varicel·la", "Ràbia", "Rubèola congènita", "Febres hemorràgiques"];
-let malaltiesProtectores = ["Innmunodeprimit", "Aplàsia medul·lar", "Tractaments citostàtics", "Trasplantats", "Grans cremats"];
-let malaltiesRespiratories = ["TBC", "Pallola", "Rubèola", "Meningitis", "Parotiditis", "Tos ferina", "Sèpsia menigocócica"];
-let malaltiesEnteriques = ["Còlera", "Gastroenteritis", "Hepatitis A", "Febre tifoidal"];
-let malaltiesCutaneomucoses = ["Cremades infectades", "Gangrena", "Impetigen", "Herpes zòster", "Ferides externes infectades"]
+let malaltiesEsctrictes = ["Diftèria", "Pesta", "Virus de l'èbola", "Varicel·la", "COVID-19", "Cremades extenses infectades"];
+let malaltiesProtectores = ["Innmunodeprimit", "Trasplantats", "Grans cremats", "Prematurs", "Leucèmies"];
+let malaltiesRespiratories = ["TBC", "Pallola", "Penumònia", "Rubèola", "Meningitis", "Parotiditis", "Tos ferina"];
+let malaltiesEnteriques = ["Salmonel·losi", "Còlera", "Hepatitis A", "Disenteries", "GEA per E.Coli"];
+let malaltiesCutaneomucoses = ["Cremades infectades", "Gangrena gaseosa", "Sarna", "Impetigen", "Ferides externes infectades"]
 let illnessTypes = ["Estricte", "Protector", "Respiratori", "Entèric", "Cutaneomucós"];
 
 

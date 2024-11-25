@@ -1,6 +1,6 @@
 const MAX_PATIENTS = 4;
 class GameManager {
-    
+
     constructor(scene) {
         this.scene = scene;
         this.Reset();
@@ -24,8 +24,8 @@ class GameManager {
         }
     }
 
-    Update(time,delta){
-        if(this.mistakesToShow.length > 0 && !ui.showingMessage ){
+    Update(time, delta) {
+        if (this.mistakesToShow.length > 0 && !ui.showingMessage) {
             ui.ShowMessage(this.mistakesToShow[0]);
             this.mistakesToShow.shift();
         }
@@ -36,9 +36,10 @@ class GameManager {
         let checks = [];
         let garments = ["la bata", "les calçes", "les ulleres", "la mascareta", "el barret", "els guants"];
         //                bata   calzas gafas  mascar gorro guantes
+        // último check: jabón antiséptico
         switch (patient.illnessType) {
             case 0:
-                checks = [true, true, false, true, true, true, false]
+                checks = [true, true, false, true, true, true, true]
                 break;
             case 1:
                 checks = [true, true, false, true, true, true, true] //Ulleres might be true
@@ -57,6 +58,7 @@ class GameManager {
                 break;
         }
 
+        // ropa
         for (let index = 0; index <= 5; index++) {
             if (!player.Wears(index) && checks[index]) {
                 this.AddMistake({
@@ -71,33 +73,61 @@ class GameManager {
             }
         }
 
+        // lavado de manos
         if (!this.washedHands) {
             this.AddMistake({
                 "mistake": "No t'has llavat les mans!",
                 "val": 1
             });
         }
-
-        if (!this.washedHandsAntiseptic && checks[6]) {
-            this.AddMistake({
-                "mistake": "No has utilitzat el sabó antisèptic",
-                "val": 1
-            });
-        } else if (this.washedHandsAntiseptic && !checks[6]) {
-            this.AddMistake({
-                "mistake": "No necessitaves el sabó antisèptic",
-                "val": 0
-            });
+        else {
+            // tipo de jabón
+            if (!this.washedHandsAntiseptic && checks[6]) {
+                this.AddMistake({
+                    "mistake": "No has utilitzat el sabó antisèptic",
+                    "val": 1
+                });
+            } else if (this.washedHandsAntiseptic && !checks[6]) {
+                this.AddMistake({
+                    "mistake": "No necessitaves el sabó antisèptic",
+                    "val": 0
+                });
+            }
         }
 
         //Check if player has visited this room in a wrong order
-        if (patient.illnessType != 0 && patient.illnessType != 4) {
+        if (patient.illnessType == 1)// protector debe ser el primero
+        {
             for (let i = 0; i < this.treatedPatients.length; i++) {
-                if (patient.illnessType == 0 && patient.illnessType == 4) {
+                let otherPatient = this.treatedPatients[i];
+                if (otherPatient.illnessType != 1) {
                     this.AddMistake({
-                        "mistake": "No has seguit l'ordre correcte per a atendre als pacients",
+                        "mistake": "No has seguit l'ordre correcte per a atendre als pacients. Protector sempre primer.",
                         "val": 1
                     });
+
+                    break;
+                }
+            }
+        } else if (patient.illnessType == 0 || patient.illnessType == 4)// estricto y cutaneomucoso deben ser los últimos
+        {
+            let isLast = this.treatedPatients.length == 3;
+
+            if (!isLast) {
+                // TODO: check remaining patients, find the list somehow
+            }
+
+        } else {
+            // el resto, simplemente comprueba que no ha entrado antes en un estricto o cutaneomucoso
+            for (let i = 0; i < this.treatedPatients.length; i++) {
+                let otherPatient = this.treatedPatients[i];
+                if (otherPatient.illnessType == 0 || otherPatient.illnessType == 4) {
+                    this.AddMistake({
+                        "mistake": "No has seguit l'ordre correcte per a atendre als pacients. Estricte i cutaneomucós sempre al final.",
+                        "val": 1
+                    });
+
+                    break;
                 }
             }
         }
@@ -107,7 +137,7 @@ class GameManager {
 
     CheckMistakesGoingOut(patient, player) {
 
-        if (player.carriesTrash && !player.firstBag) {
+        if (patient.illnessType != 1 && player.carriesTrash && !player.firstBag) {
             this.AddMistake({
                 "mistake": "No has usado la primera bolsa",
                 "val": 0
@@ -129,7 +159,7 @@ class GameManager {
             });
         }
 
-        if (!player.secondBag) {
+        if (index != 1 && !player.secondBag) {
             this.AddMistake({
                 "mistake": "No has usat la segona bossa",
                 "val": 0
@@ -183,9 +213,9 @@ class GameManager {
     }
 
     AddMistake(mistake) {
-        if(mistake["val"] == 0){
+        if (mistake["val"] == 0) {
             this.mistakesToShow.push(mistake["mistake"]);
-        }else{
+        } else {
         }
         this.mistakes.push(mistake);
     }

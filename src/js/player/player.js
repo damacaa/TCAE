@@ -307,6 +307,7 @@ class Player extends Phaser.GameObjects.Sprite {
     switch (illnessType) {
       case 0:
       case 2:
+      case 3:
       case 4:
         this.trashId = 3;
         break;

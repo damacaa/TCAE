@@ -16,9 +16,9 @@ class Room {
 
         this.hasAnteroom = this.patient.illnessType <= 1;
         if (this.hasAnteroom) {
-            this.SetUpRoom2();
+            this.SetUpRoom2(patientInfo);
         } else {
-            this.SetUpRoom1();
+            this.SetUpRoom1(patientInfo);
         }
 
         switch (patientInfo.illnessType) {
@@ -35,7 +35,7 @@ class Room {
         }
     }
 
-    SetUpRoom1() {
+    SetUpRoom1(patientInfo) {
         this.bed = this.scene.AddItem(this.x, 80, "bed");
         this.bed.room = this;
         this.bed.Interact = function () {
@@ -92,7 +92,7 @@ class Room {
         this.items.push(this.trashInside);
     }
 
-    SetUpRoom2() {
+    SetUpRoom2(patientInfo) {
         this.bed = this.scene.AddItem(this.x, 80, "bed");
         this.bed.room = this;
         this.bed.Interact = function () {
@@ -108,7 +108,7 @@ class Room {
         this.door.Interact = function () {
             this.room.scene.CrossPatientDoor(this)
         }
-        this.door.name = "Entrar a l'antesala"
+        this.door.name = "Entrar a l'avantsala"
         this.items.push(this.door);
 
         this.paper = this.scene.AddItem(this.x + 96, 272, "paper");
@@ -142,15 +142,17 @@ class Room {
         this.items.push(this.table);
 
         //Trash
-        this.trashOutside = this.scene.AddItem(this.x + 96, 192, "trash");
-        this.trashOutside.Interact = function () {
-            if (currentScene.player.carriesTrash) {
-                currentScene.player.secondBag = true;
-                console.log("Segunda bolsa");
+        if (patientInfo.illnessType != 1) {
+            this.trashOutside = this.scene.AddItem(this.x + 96, 192, "trash");
+            this.trashOutside.Interact = function () {
+                if (currentScene.player.carriesTrash) {
+                    currentScene.player.secondBag = true;
+                    console.log("Segunda bolsa");
+                }
+                this.trashOutside.name = "Poal de fem";
+                this.items.push(this.trashOutside);
             }
         }
-        this.trashOutside.name = "Poal de fem";
-        this.items.push(this.trashOutside);
 
         this.trashInside = this.scene.AddItem(this.x + 96, 120, "trash");
         this.trashInside.Interact = function () {
@@ -193,7 +195,7 @@ class Room {
         }
     }
 
-    TakeCareOfPatient(){
+    TakeCareOfPatient() {
         //ui.ShowActions();
         currentScene.player.CarryTrash(currentRoom.patient.illnessType);
         currentScene.actionsDone++;

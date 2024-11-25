@@ -86,10 +86,10 @@ class UI extends BaseMenuScene {
             ui.HidePatientInfo();
         });
 
-        this.header = this.PrintText("Informe: ", 16, 175, 30, darkTextColor);
+        this.header = this.PrintText("Informe: ", 32, 175, 20, darkTextColor);
         this.header.setOrigin(0, 0);
 
-        this.illness = this.PrintText(patient.illness, 16, 175, 50, darkTextColor);
+        this.illness = this.PrintTextWrap("-" + patient.illness + " (" + illnessTypes[patient.illnessType] + ")", 16, 175, 50, darkTextColor, 120);
         this.illness.setOrigin(0, 0);
     }
 
@@ -330,7 +330,7 @@ class UI extends BaseMenuScene {
             let patient = currentScene.rooms[i].patient;
             let patientSprite = this.add.sprite(x, y + 10, "pacientes").setDepth(12).setScrollFactor(0).setScale(3).setFrame(patient.frame.name);
             patientSprite.angle = 90;
-            let patientText = this.add.text(20 + x, y, patient.illness + " (" + illnessTypes[patient.illnessType] + ")", {
+            let patientText = this.add.text(20 + x, y, patient.illness, {
                 fontFamily: 'BetterPixelsAcce',
                 fontSize: '16px',
                 color: textColor,
@@ -409,6 +409,18 @@ class UI extends BaseMenuScene {
             fontSize: size + 'px',
             color: color,
             align: 'left'
+        }).setDepth(15).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4).setResolution(3);
+
+        return t;
+    }
+
+    PrintTextWrap(text, size = 16, x = 0, y = 0, color = textColo, wrap = 100) {
+        let t = this.add.text(x, y, text, {
+            fontFamily: 'BetterPixelsAcce',
+            fontSize: size + 'px',
+            color: color,
+            align: 'left',
+            wordWrap: { width: wrap, useAdvancedWrap: true } // Enable word wrapping
         }).setDepth(15).setOrigin(.5, .5).setScrollFactor(0).setLineSpacing(4).setResolution(3);
 
         return t;
